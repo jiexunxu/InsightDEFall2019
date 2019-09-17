@@ -1,6 +1,7 @@
 # enhance a single image by its name
 
 import boto3
+import transform_image as Transf
 from PIL import Image
 from io import BytesIO
 
@@ -13,8 +14,8 @@ def enhance(filename, bbox_descriptor, user_param):
     img=Image.open(response['Body'])
     # Enhance and save every image to the folder output_data in s3
     for i in range(0, 10):
-        [img_enhanced, bbox_descriptor_enhanced]=transform_image(img, bbox_descriptor, i, user_param[i])
+        [img_enhanced, bbox_descriptor_enhanced]=Transf.transform_image(img, bbox_descriptor, i, user_param[i])
         output_obj=bucket.Object('output_data/'+filename+'_{}.jpg'.format(i))
         file_stream=BytesIO()
         img_enhanced.save(file_stream, format='jpeg')
-        output_obj.put(Body=file_stream.getvalue())
+        output_obj.put(Body=file_stream.getvalue())    

@@ -31,46 +31,46 @@ def transform_image(img, bbox_descriptor, transform_type, param):
     xmax=[]
     ymin=[]
     ymax=[]
-    for i in range len(bbox_descriptor):
+    for i in range(len(bbox_descriptor)):
         xmin.append(bbox_descriptor[i][4])
         xmax.append(bbox_descriptor[i][5])
         ymin.append(bbox_descriptor[i][6])
         ymax.append(bbox_descriptor[i][7])
     if transform_type==0:
         img=img.transpose(Image.FLIP_LEFT_RIGHT)
-        for i in range len(bbox_descriptor):
+        for i in range(len(bbox_descriptor)):
             bbox_descriptor[i][4]=1-xmax[i]
             bbox_descriptor[i][5]=1-xmin[i]
     elif transform_type==1:
         img=img.transpose(Image.FLIP_TOP_BOTTOM)
-        for i in range len(bbox_descriptor):
+        for i in range(len(bbox_descriptor)):
             bbox_descriptor[i][6]=1-ymax[i]
             bbox_descriptor[i][7]=1-ymin[i]
     elif transform_type==2:
         img=img.rotate(90)
-        for i in range len(bbox_descriptor):
+        for i in range(len(bbox_descriptor)):
             bbox_descriptor[i][4]=ymin[i]
             bbox_descriptor[i][5]=ymax[i]
             bbox_descriptor[i][6]=1-xmax[i]
             bbox_descriptor[i][7]=1-xmin[i]
     elif transform_type==3:
         img=img.rotate(180) 
-        for i in range len(bbox_descriptor):
+        for i in range(len(bbox_descriptor)):
             bbox_descriptor[i][4]=1-xmax[i]
             bbox_descriptor[i][5]=1-xmin[i]
             bbox_descriptor[i][6]=1-ymax[i]
             bbox_descriptor[i][7]=1-ymin[i]
     elif transform_type==4:
         img=img.rotate(270)
-        for i in range len(bbox_descriptor):
-            bbox_descriptor[4][i]=1-ymax[i]
-            bbox_descriptor[5][i]=1-ymin[i]
-            bbox_descriptor[6][i]=xmin[i]
-            bbox_descriptor[7][i]=xmax[i]
+        for i in range(len(bbox_descriptor)):
+            bbox_descriptor[i][4]=1-ymax[i]
+            bbox_descriptor[i][5]=1-ymin[i]
+            bbox_descriptor[i][6]=xmin[i]
+            bbox_descriptor[i][7]=xmax[i]
     elif transform_type==5:        
         img=img.resize((int(width*(1+param)), int(height*(1+param))), Image.BICUBIC).crop(
         (int(width*param/2), int(height*param/2), int(width*(1+param/2)), int(height*(1+param/2))))
-        for i in range len(bbox_descriptor):
+        for i in range(len(bbox_descriptor)):
             bbox_descriptor[i][4]=xmin[i]-param/2
             bbox_descriptor[i][5]=xmax[i]+param/2
             bbox_descriptor[i][6]=ymin[i]-param/2
