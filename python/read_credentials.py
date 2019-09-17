@@ -14,4 +14,7 @@ def read():
             elif line_count==1:
                 secret_access_key=row[1]
                 line_count+=1
-    return [key_ID, secret_access_key]
+            elif line_count==2:
+                db_password=row[1]
+                line_count+=1
+    return [key_ID, secret_access_key, db_password]

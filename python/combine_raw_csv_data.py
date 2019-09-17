@@ -9,7 +9,8 @@ import boto3
 import read_credentials
 
 def combine():
-    s3=boto3.resource('s3')
+    [aws_key_id, aws_access_key, db_password]=read_credentials.read()
+    s3=boto3.resource('s3', aws_key_id, aws_access_key)
     bucket=s3.Bucket('jiexunxu-open-image-dataset') 
     # Read image level labels   
     lines=read_csv(bucket, 'train-annotations-human-imagelabels-boxable.csv')
