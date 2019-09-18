@@ -9,22 +9,19 @@ Parameters:
     ImageID,Source,LabelName,Confidence,XMin,XMax,YMin,YMax,IsOccluded,IsTruncated,IsGroupOf,IsDepiction,IsInside
     for transform_type 0~5 the XMin, XMax, YMin and YMax values needs to be changed
     transform_type indicates different transform types, specifically:
-        0: flip horizontally
-        1: flip vertically
-        2: rotate 90 degrees counter-clockwise
-        3: rotate 180 degrees counter-clockwise
-        4: rotate 270 degrees counter-clockwise
-        5: scale image up by param then crop the image to its original size
-        6: tweak the brightness of the image by user param
-        7: tweak the contrast of the image by user param
-        8: tweak the sharpness of the image by user param
-        9: blur the image
+        0: flip horizontally if param==0, flip vertically if param==1
+        1: rotate 90 degrees counter-clockwise if param==0, rotate 180 degrees counter-clockwise if param==1, rotate 270 degrees countr-clockwise if param==2
+        2: scale image up by param then crop the image to its original size
+        3: tweak the brightness of the image by param
+        4: tweak the contrast of the image by param
+        5: tweak the sharpness of the image by param
+        6: blur the image
 @author: Jiexun Xu
 """
 
 from PIL import Image, ImageEnhance, ImageFilter
 
-def transform_image(img, bbox_descriptor, transform_type, param):
+def transform(img, bbox_descriptor, transform_type, param):
     width=img.width
     height=img.height
     xmin=[]
@@ -37,37 +34,39 @@ def transform_image(img, bbox_descriptor, transform_type, param):
         ymin.append(bbox_descriptor[i][6])
         ymax.append(bbox_descriptor[i][7])
     if transform_type==0:
-        img=img.transpose(Image.FLIP_LEFT_RIGHT)
-        for i in range(len(bbox_descriptor)):
-            bbox_descriptor[i][4]=1-xmax[i]
-            bbox_descriptor[i][5]=1-xmin[i]
+        if param==0:
+            img=img.transpose(Image.FLIP_LEFT_RIGHT)
+            for i in range(len(bbox_descriptor)):
+                bbox_descriptor[i][4]=1-xmax[i]
+                bbox_descriptor[i][5]=1-xmin[i]
+        elif param==1:
+            img=img.transpose(Image.FLIP_TOP_BOTTOM)
+            for i in range(len(bbox_descriptor)):
+                bbox_descriptor[i][6]=1-ymax[i]
+                bbox_descriptor[i][7]=1-ymin[i]
     elif transform_type==1:
-        img=img.transpose(Image.FLIP_TOP_BOTTOM)
-        for i in range(len(bbox_descriptor)):
-            bbox_descriptor[i][6]=1-ymax[i]
-            bbox_descriptor[i][7]=1-ymin[i]
-    elif transform_type==2:
-        img=img.rotate(90)
-        for i in range(len(bbox_descriptor)):
-            bbox_descriptor[i][4]=ymin[i]
-            bbox_descriptor[i][5]=ymax[i]
-            bbox_descriptor[i][6]=1-xmax[i]
-            bbox_descriptor[i][7]=1-xmin[i]
-    elif transform_type==3:
-        img=img.rotate(180) 
-        for i in range(len(bbox_descriptor)):
-            bbox_descriptor[i][4]=1-xmax[i]
-            bbox_descriptor[i][5]=1-xmin[i]
-            bbox_descriptor[i][6]=1-ymax[i]
-            bbox_descriptor[i][7]=1-ymin[i]
-    elif transform_type==4:
-        img=img.rotate(270)
-        for i in range(len(bbox_descriptor)):
-            bbox_descriptor[i][4]=1-ymax[i]
-            bbox_descriptor[i][5]=1-ymin[i]
-            bbox_descriptor[i][6]=xmin[i]
-            bbox_descriptor[i][7]=xmax[i]
-    elif transform_type==5:        
+        if param==0:
+            img=img.rotate(90)
+            for i in range(len(bbox_descriptor)):
+                bbox_descriptor[i][4]=ymin[i]
+                bbox_descriptor[i][5]=ymax[i]
+                bbox_descriptor[i][6]=1-xmax[i]
+                bbox_descriptor[i][7]=1-xmin[i]
+        elif param==1:
+            img=img.rotate(180) 
+            for i in range(len(bbox_descriptor)):
+                bbox_descriptor[i][4]=1-xmax[i]
+                bbox_descriptor[i][5]=1-xmin[i]
+                bbox_descriptor[i][6]=1-ymax[i]
+                bbox_descriptor[i][7]=1-ymin[i]
+        elif param==2:
+            img=img.rotate(270)
+            for i in range(len(bbox_descriptor)):
+                bbox_descriptor[i][4]=1-ymax[i]
+                bbox_descriptor[i][5]=1-ymin[i]
+                bbox_descriptor[i][6]=xmin[i]
+                bbox_descriptor[i][7]=xmax[i]
+    elif transform_type==2:        
         img=img.resize((int(width*(1+param)), int(height*(1+param))), Image.BICUBIC).crop(
         (int(width*param/2), int(height*param/2), int(width*(1+param/2)), int(height*(1+param/2))))
         for i in range(len(bbox_descriptor)):
@@ -75,13 +74,13 @@ def transform_image(img, bbox_descriptor, transform_type, param):
             bbox_descriptor[i][5]=xmax[i]+param/2
             bbox_descriptor[i][6]=ymin[i]-param/2
             bbox_descriptor[i][7]=ymax[i]+param/2
-    elif transform_type==6:
+    elif transform_type==3:
         img=ImageEnhance.Brightness(img).enhance(param)
-    elif transform_type==7:
+    elif transform_type==4:
         img=ImageEnhance.Contrast(img).enhance(param)
-    elif transform_type==8:
+    elif transform_type==5:
         img=ImageEnhance.Sharpness(img).enhance(param)
-    elif transform_type==9:
+    elif transform_type==6:
         img=img.filter(ImageFilter.GaussianBlur)
     
     return [img, bbox_descriptor]
