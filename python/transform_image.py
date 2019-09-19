@@ -21,59 +21,54 @@ Parameters:
 
 from PIL import Image, ImageEnhance, ImageFilter
 
-def transform(img, bbox_descriptor, transform_type, param):
+def transform(img, bbox_descriptor, bbox_descriptor_enhanced, transform_type, param):
     width=img.width
     height=img.height
-    xmin=[]
-    xmax=[]
-    ymin=[]
-    ymax=[]
-    for i in range(len(bbox_descriptor)):
-        xmin.append(bbox_descriptor[i][4])
-        xmax.append(bbox_descriptor[i][5])
-        ymin.append(bbox_descriptor[i][6])
-        ymax.append(bbox_descriptor[i][7])
+    bbox_count=len(bbox_descriptor)
+    bbox_enhanced_count=len(bbox_descriptor_enhanced)
+    for i in range(bbox_count):
+        bbox_descriptor_enhanced.append(list(bbox_descriptor[i]))
     if transform_type==0:
         if param==0:
             img=img.transpose(Image.FLIP_LEFT_RIGHT)
-            for i in range(len(bbox_descriptor)):
-                bbox_descriptor[i][4]=1-xmax[i]
-                bbox_descriptor[i][5]=1-xmin[i]
+            for i in range(bbox_count):
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][4]=1-bbox_descriptor[i][5]
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][5]=1-bbox_descriptor[i][4]
         elif param==1:
             img=img.transpose(Image.FLIP_TOP_BOTTOM)
-            for i in range(len(bbox_descriptor)):
-                bbox_descriptor[i][6]=1-ymax[i]
-                bbox_descriptor[i][7]=1-ymin[i]
+            for i in range(bbox_count):
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][6]=1-bbox_descriptor[i][7]
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][7]=1-bbox_descriptor[i][6]
     elif transform_type==1:
         if param==0:
             img=img.rotate(90)
-            for i in range(len(bbox_descriptor)):
-                bbox_descriptor[i][4]=ymin[i]
-                bbox_descriptor[i][5]=ymax[i]
-                bbox_descriptor[i][6]=1-xmax[i]
-                bbox_descriptor[i][7]=1-xmin[i]
+            for i in range(bbox_count):
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][4]=bbox_descriptor[i][6]
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][5]=bbox_descriptor[i][7]
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][6]=1-bbox_descriptor[i][5]
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][7]=1-bbox_descriptor[i][4]
         elif param==1:
             img=img.rotate(180) 
-            for i in range(len(bbox_descriptor)):
-                bbox_descriptor[i][4]=1-xmax[i]
-                bbox_descriptor[i][5]=1-xmin[i]
-                bbox_descriptor[i][6]=1-ymax[i]
-                bbox_descriptor[i][7]=1-ymin[i]
+            for i in range(bbox_count):
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][4]=1-bbox_descriptor[i][5]
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][5]=1-bbox_descriptor[i][4]
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][6]=1-bbox_descriptor[i][7]
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][7]=1-bbox_descriptor[i][6]
         elif param==2:
             img=img.rotate(270)
-            for i in range(len(bbox_descriptor)):
-                bbox_descriptor[i][4]=1-ymax[i]
-                bbox_descriptor[i][5]=1-ymin[i]
-                bbox_descriptor[i][6]=xmin[i]
-                bbox_descriptor[i][7]=xmax[i]
+            for i in range(bbox_count):
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][4]=1-bbox_descriptor[i][7]
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][5]=1-bbox_descriptor[i][6]
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][6]=bbox_descriptor[i][4]
+                bbox_descriptor_enhanced[bbox_enhanced_count+i][7]=bbox_descriptor[i][5]
     elif transform_type==2:        
         img=img.resize((int(width*(1+param)), int(height*(1+param))), Image.BICUBIC).crop(
         (int(width*param/2), int(height*param/2), int(width*(1+param/2)), int(height*(1+param/2))))
-        for i in range(len(bbox_descriptor)):
-            bbox_descriptor[i][4]=xmin[i]-param/2
-            bbox_descriptor[i][5]=xmax[i]+param/2
-            bbox_descriptor[i][6]=ymin[i]-param/2
-            bbox_descriptor[i][7]=ymax[i]+param/2
+        for i in range(bbox_count):
+            bbox_descriptor_enhanced[bbox_enhanced_count+i][4]=bbox_descriptor[i][4]-param/2
+            bbox_descriptor_enhanced[bbox_enhanced_count+i][5]=bbox_descriptor[i][5]+param/2
+            bbox_descriptor_enhanced[bbox_enhanced_count+i][6]=bbox_descriptor[i][6]-param/2
+            bbox_descriptor_enhanced[bbox_enhanced_count+i][7]=bbox_descriptor[i][7]+param/2
     elif transform_type==3:
         img=ImageEnhance.Brightness(img).enhance(param)
     elif transform_type==4:
@@ -83,4 +78,4 @@ def transform(img, bbox_descriptor, transform_type, param):
     elif transform_type==6:
         img=img.filter(ImageFilter.GaussianBlur)
     
-    return [img, bbox_descriptor]
+    return img

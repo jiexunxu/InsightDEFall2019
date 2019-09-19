@@ -11,15 +11,16 @@ def enhance(bucket, connection, imageid, user_param, output_foldername):
     img=Image.open(response['Body'])
     # Get the bbox descriptors associated with this image
     cursor=connection.cursor()
-    cursor.execute('SELECT * FROM image_bbox WHERE imageid=%s', (imageid))
+    query="SELECT * FROM image_bbox WHERE imageid='{}'".format(imageid)
+    cursor.execute(query)
     bbox_descriptor=cursor.fetchall()
-    # Enhance and save every image to the folder output_data in s3
+    # Enhance and save every image to the folder output_data in s3, and append all enhanced discriptors to bbox_descriptors_enhanced
+    bbox_descriptors_enhanced=[]
     for i in range(0, 6):
-        [img_enhanced, bbox_descriptor_enhanced]=transform_image.transform(img, bbox_descriptor, i, user_param[i])
-        bbox_descriptor.append(bbox_descriptor_enhanced)
+        img_enhanced=transform_image.transform(img, bbox_descriptor, bbox_descriptors_enhanced, i, user_param[i])
         # save image to corresponding s3 bucket
-        output_obj=bucket.Object(output_foldername+imageid+'_{}.jpg'.format(i))
+        output_obj=bucket.Object(output_foldername+imageid+"_{}.jpg".format(i))
         file_stream=BytesIO()
         img_enhanced.save(file_stream, format='jpeg')
         output_obj.put(Body=file_stream.getvalue())
-    return bbox_descriptor
+    return bbox_descriptors_enhanced
