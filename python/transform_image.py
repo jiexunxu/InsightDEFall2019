@@ -27,7 +27,7 @@ def transform(img, bbox_descriptor, bbox_descriptor_enhanced, transform_type, pa
     bbox_count=len(bbox_descriptor)
     bbox_enhanced_count=len(bbox_descriptor_enhanced)
     for i in range(bbox_count):
-        bbox_descriptor_enhanced.append([bbox_descriptor[i][4], [bbox_descriptor[i][5], [bbox_descriptor[i][6], [bbox_descriptor[i][7]])
+        bbox_descriptor_enhanced.append([bbox_descriptor[i][4], bbox_descriptor[i][5], bbox_descriptor[i][6], bbox_descriptor[i][7]])
     if transform_type==1:
         if param==0:
             img=img.transpose(Image.FLIP_LEFT_RIGHT)

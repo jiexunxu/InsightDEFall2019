@@ -14,6 +14,6 @@ def save(bucket, connection, imageid, bbox_descriptor, bbox_xy_enhanced, output_
     for i in range(len(bbox_descriptor)):
         tuple=bbox_descriptor[i]
         for j in range(8):
-            local_file2.write(imageid+"_"+str(i)+","+tuple[1]+","+tuple[2]+","+tuple[3]+","+str(bbox_xy_enhanced[i*8+j][0])+","+str(bbox_xy_enhanced[i*8+j][1])+","+str(bbox_xy_enhanced[i*8+j][2])+","+str(bbox_xy_enhanced[i*8+j][3])+","+tuple[8]+","+tuple[9]+","+tuple[10]+","+tuple[11]+","+tuple[12]+"\n")
+            local_file2.write(imageid+"_"+str(j)+","+tuple[1]+","+tuple[2]+","+tuple[3]+","+str(bbox_xy_enhanced[i*8+j][0])+","+str(bbox_xy_enhanced[i*8+j][1])+","+str(bbox_xy_enhanced[i*8+j][2])+","+str(bbox_xy_enhanced[i*8+j][3])+","+tuple[8]+","+tuple[9]+","+tuple[10]+","+tuple[11]+","+tuple[12]+"\n")
         tuple_count+=1
     
