@@ -7,7 +7,7 @@ def main():
     [aws_key_id, aws_access_key, db_password]=read_credentials.read()
     s3=boto3.resource('s3', aws_access_key_id=aws_key_id, aws_secret_access_key=aws_access_key)
     bucket=s3.Bucket('jiexunxu-open-image-dataset') 
-    connection=psycopg2.connect(host = '127.0.0.1', database = 'imagedb', user = 'postgres', password = 'qwerty')
+    connection=psycopg2.connect(host = '127.0.0.1', database = 'imagedb', user = 'postgres', password = db_password)
     cursor=connection.cursor()
 
     print('start insertion into label_names')
