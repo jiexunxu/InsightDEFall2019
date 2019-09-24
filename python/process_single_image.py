@@ -11,5 +11,5 @@ def process(bucket, connection, imageid, user_param, output_foldername):
     # Enhance and save every image to the folder output_data in s3, and append the xmin, xmax, ymin and ymax of all enhanced descriptors to bbox_xy_enhanced
     bbox_xy_enhanced=[]
     for i in range(0, 8):
-        img_enhanced=get_bbox_descriptors.get(bbox_descriptor, bbox_xy_enhanced, i, user_param[i])
+        get_bbox_descriptors.get(bbox_descriptor, bbox_xy_enhanced, i, user_param[i])
     return [bbox_descriptor, bbox_xy_enhanced]

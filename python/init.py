@@ -11,6 +11,7 @@ def init():
     bucket=s3.Bucket('jiexunxu-open-image-dataset')
     connection=psycopg2.connect(host = db_host, database = 'imagedb', user = 'postgres', password = db_password)
     output_foldername='output_data/'+str(time.time())+'/'
+    user_history={}
     with open("boise_log.txt", "r") as f:
         for line in f:
             items=line.split(',')

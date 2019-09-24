@@ -19,11 +19,11 @@ def start():
     imageids=select_images.select(connection, user_selection[0], user_selection[1], user_selection[2], user_selection[3])
     # later in spark we will divide imageids into 4 parts and assign each part to a EC2 instance to do the job below
     all_bbox_descriptor=[]
-    local_file_name1="tmp1.tmpdump"
+    local_file_name1="tmp1.tmpdump~"
     with open(local_file_name1, 'w') as f:
         f.write("ImageID,Source,LabelName,Confidence\n")
     local_file1=open(local_file_name1, 'a')
-    local_file_name2="tmp2.tmpdump"
+    local_file_name2="tmp2.tmpdump~"
     with open(local_file_name2, 'w') as f:
         f.write("ImageID,Source,LabelName,Confidence,XMin,XMax,YMin,YMax,IsOccluded,IsTruncated,IsGroupOf,IsDepiction,IsInside\n")
     local_file2=open(local_file_name2, 'a')

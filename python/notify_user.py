@@ -3,10 +3,14 @@
 import smtplib
 from email.message import EmailMessage
 
-def email_and_log(user_email, user_selection, user_param):
+def email_and_log(output_foldername, user_email, user_selection, user_param):
     def email():
         msg=EmailMessage()
-        msg.set_content("Your download link is ready at ")
+        full_path="http://jiexunxu-open-image-dataset.s3.amazonaws.com/"+output_foldername
+        msg.set_content("Your download link is ready at:\n"
+        +full_path+"selected-train-annotations-bbox.csv\n"
+        +full_path+"selected-train-annotations-human-imagelabels-boxable.csv\n"
+        )
         msg['Subject']="Your data is ready"
         msg['From']="service"
         msg['To']=user_email

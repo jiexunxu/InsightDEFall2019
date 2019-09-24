@@ -22,8 +22,6 @@ Parameters:
 from PIL import Image, ImageEnhance, ImageFilter
 
 def get(bbox_descriptor, bbox_descriptor_enhanced, transform_type, param):
-    width=img.width
-    height=img.height
     bbox_count=len(bbox_descriptor)
     bbox_enhanced_count=len(bbox_descriptor_enhanced)
     for i in range(bbox_count):
