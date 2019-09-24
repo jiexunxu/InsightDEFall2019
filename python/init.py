@@ -11,5 +11,12 @@ def init():
     bucket=s3.Bucket('jiexunxu-open-image-dataset')
     connection=psycopg2.connect(host = db_host, database = 'imagedb', user = 'postgres', password = db_password)
     output_foldername='output_data/'+str(time.time())+'/'
-    return [bucket, connection, output_foldername]    
+    with open("boise_log.txt", "r") as f:
+        for line in f:
+            items=line.split(',')
+            user_email=items[0]
+            if not user_email in user_history:
+                user_history[user_email]=[]
+            user_history[user_email].append
+    return [bucket, connection, output_foldername, user_history]    
 
