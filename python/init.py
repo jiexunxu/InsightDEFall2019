@@ -17,6 +17,7 @@ def init():
             user_email=items[0]
             if not user_email in user_history:
                 user_history[user_email]=[]
-            user_history[user_email].append
+            for i in range(1, len(items)):
+                user_history[user_email].append(items[i])
     return [bucket, connection, output_foldername, user_history]    
 
