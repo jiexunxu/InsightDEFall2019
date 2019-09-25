@@ -33,8 +33,8 @@ def main(user_selection, user_param, user_email):
     s3_image_files=[]
     for imageid in imageids:
         s3_image_files.append("s3a://jiexunxu-open-image-dataset/train_data/"+imageid[0]+".jpg")
-        [bbox_descriptor, bbox_xy_enhanced]=process_single_image.process(bucket, connection, imageid[0], user_param, output_foldername)
-        save_metadata.save(bucket, connection, imageid[0], bbox_descriptor, bbox_xy_enhanced, output_foldername, local_file1, local_file2)
+#        [bbox_descriptor, bbox_xy_enhanced]=process_single_image.process(bucket, connection, imageid[0], user_param, output_foldername)
+#        save_metadata.save(bucket, connection, imageid[0], bbox_descriptor, bbox_xy_enhanced, output_foldername, local_file1, local_file2)
     local_file1.close()
     local_file2.close()
     with open(local_file_name1, 'rb') as body:
@@ -47,7 +47,7 @@ def main(user_selection, user_param, user_email):
     images_df=spark.read.format("image").load(s3_image_files)    
     tr=(ImageTransformer().setOutputCol("transformed").resize(height=200, width=200).crop(0,0, height=160, width=120))
     result=tr.transform(images_df).select("transformed")
-    result.write.format("avro").save("s3a://jiexunxu-open-image-dataset/"+output_foldername+"avro/")
+    result.write.format("avro").save("s3a://jiexunxu-open-image-dataset/"+output_foldername+"images.avro")
     
     notify_user.email_and_log(output_foldername, user_email, user_selection, user_param)
 

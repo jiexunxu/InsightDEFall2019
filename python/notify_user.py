@@ -7,9 +7,13 @@ def email_and_log(output_foldername, user_email, user_selection, user_param):
     def email():
         msg=EmailMessage()
         full_path="http://jiexunxu-open-image-dataset.s3.amazonaws.com/"+output_foldername
-        msg.set_content("Your download link is ready at:\n"
+        msg.set_content("Hello, your processing request has completed and your data is available to download.\n"
+        +"Your meta-data can be downloaded at:\n"
         +full_path+"selected-train-annotations-bbox.csv\n"
-        +full_path+"selected-train-annotations-human-imagelabels-boxable.csv\n"
+        +full_path+"selected-train-annotations-human-imagelabels-boxable.csv\n\n"
+        +"To download the image files please obtain our python program avro_to_images.py, "
+        +"install the related libraries, and execute the following command on command line:\n"
+        +"python3 avro_to_images.py s3://jiexunxu-open-image-dataset/"+output_foldername+"images.avro/"
         )
         msg['Subject']="Your data is ready"
         msg['From']="service"
