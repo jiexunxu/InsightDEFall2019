@@ -15,3 +15,10 @@ gexelenor@4nextmail.com,0,0,1,0,0,1,0.3,0.5,1.8,2.0,3
 gexelenor@4nextmail.com,0,0,1,0,0,1,0.3,0.5,1.8,2.0,3
 gexelenor@4nextmail.com,0,0,1,0,0,1,0.3,0.5,1.8,2.0,3
 gexelenor@4nextmail.com,0,0,1,0,0,1,0.3,0.5,1.8,2.0,3
+gexelenor@4nextmail.com,0,0,1,0,0,1,0.3,0.5,1.8,2.0,3
+gexelenor@4nextmail.com,3,0.3,1.2,3,0.3,1.2,0.1,0.8,0.3,0.5
+gexelenor@4nextmail.com,3,0.3,1.2,3,0.3,1.2,0.1,0.8,0.3,0.5
+gexelenor@4nextmail.com,3,0.3,1.2,3,0.3,1.2,0.1,0.8,0.3,0.5
+gexelenor@4nextmail.com,3,0.3,1.2,3,0.3,1.2,0.1,0.8,0.3,0.5
+gexelenor@4nextmail.com,3,0.3,1.2,3,0.3,1.2,0.1,0.8,0.3,0.5
+gexelenor@4nextmail.com,13,3.0,1.2,13,3.0,1.2,0.1,0.8,0.3,0.5

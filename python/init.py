@@ -10,7 +10,7 @@ def init():
     s3=boto3.resource('s3', aws_access_key_id=aws_key_id, aws_secret_access_key=aws_access_key)
     bucket=s3.Bucket('jiexunxu-open-image-dataset')
     connection=psycopg2.connect(host = db_host, database = 'imagedb', user = 'postgres', password = db_password)
-    output_foldername='output_data/'+str(time.time())+'/'
+    output_foldername=str(time.time())+'/'
     user_history={}
     with open("boise_log.txt", "r") as f:
         for line in f:

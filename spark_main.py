@@ -16,6 +16,8 @@ from mmlspark.opencv import toNDArray
 from mmlspark.opencv import ImageTransformer
 from mmlspark.io import *
 import sys
+import avro_to_images
+import upload_result_to_s3
 
 def main(user_selection, user_param, user_email):
     [bucket, connection, output_foldername, history]=init.init()
@@ -45,18 +47,33 @@ def main(user_selection, user_param, user_email):
     print('start batch processing in spark')            
     spark = pyspark.sql.SparkSession.builder.appName("BatchImageProcessing").getOrCreate()
     images_df=spark.read.format("image").load(s3_image_files)    
-    tr=(ImageTransformer().setOutputCol("transformed").resize(height=200, width=200).crop(0,0, height=160, width=120))
-    result=tr.transform(images_df).select("transformed")
-    result.write.format("avro").save("s3a://jiexunxu-open-image-dataset/"+output_foldername+"images.avro")
+    flip_horizontal_blur_trans=(ImageTransformer().setOutputCol("fhb_transform").flip(flipCode=1).gaussianKernel(user_param[0], user_param[1]))
+    flip_vertical_blur_trans=(ImageTransformer().setOutputCol("fvb_transform").flip(flipCode=0).gaussianKernel(user_param[0], user_param[1]))
+    rotate_blur_trans=(ImageTransformer().setOutputCol("rb_transform").flip(flipCode=0).flip(flipCode=1).gaussianKernel(user_param[0], user_param[1]))
+  #  scale_blur_trans=(ImageTransformer().setOutputCol("sb").resize(height=).crop().gaussianKernel(user_param[0], user_param[1]))
+  #  crop_blur_trans=(ImageTransformer().setOutputCol("cb").crop(height=).gaussianKernel(user_param[0], user_param[1]))
+  #  tr=(ImageTransformer().setOutputCol("transformed").resize(height=200, width=200).crop(0,0, height=160, width=120))
+    result=flip_horizontal_blur_trans.transform(images_df)
+    result=flip_vertical_blur_trans.transform(result)
+    result=rotate_blur_trans.transform(result)
     
+  #  result.write.format("avro").save("s3a://jiexunxu-open-image-dataset/"+output_foldername+"images.avro")
+    avro_path="./avro_output/"
+    result.write.format("avro").mode("overwrite").save(avro_path)
+    avro_to_images.convert(avro_path, output_foldername)
+    upload_result_to_s3.upload(bucket, output_foldername)    
     notify_user.email_and_log(output_foldername, user_email, user_selection, user_param)
 
 #user_selection=[9, 10, 1, '/m/01_5g']
+# user param: gaussian blur apperture size (odd integer), gaussian blur sigma, scale factor, crop xmin, crop xmax, crop ymin, crop ymax
 #user_param=[0, 0, 1, 0.3, 0.5, 1.8, 2.0, 3]
 #user_email='gexelenor@4nextmail.com'
-user_selection=[int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]), sys.argv[4]]
-user_param=[int(sys.argv[5]), int(sys.argv[6]), int(sys.argv[7]), float(sys.argv[8]), float(sys.argv[9]), float(sys.argv[10]), float(sys.argv[11]), int(sys.argv[12])]
-user_email=sys.argv[13]
+
+user_email=sys.argv[1]
+user_param=[int(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5]), float(sys.argv[6]), float(sys.argv[7]), float(sys.argv[8])]
+user_selection=[int(sys.argv[9]), int(sys.argv[10]), int(sys.argv[11])]
+for i in range(12, len(sys.argv)):
+    user_selection.append(sys.argv[i])
 main(user_selection, user_param, user_email)
     
     
