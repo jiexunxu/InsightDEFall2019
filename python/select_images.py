@@ -8,12 +8,16 @@
 import psycopg2
 import read_credentials
 
-def select(connection, min_obj_count, max_obj_count, is_google, target_label):
+def select(connection, user_selection):
+    min_obj_count=user_selection[0]
+    max_obj_count=user_selection[1]
+    is_google=user_selection[2]
+    target_labels=tuple(user_selection[3:len(user_selection)])
     cursor=connection.cursor()
     if is_google==1:
-        cursor.execute('''SELECT imageid FROM image_selection WHERE obj_count>=%s AND obj_count<=%s AND is_google='1' AND label=%s''', (min_obj_count, max_obj_count, target_label))
+        cursor.execute('''SELECT imageid FROM image_selection WHERE obj_count>=%s AND obj_count<=%s AND is_google='1' AND label IN %s''', (min_obj_count, max_obj_count, target_labels,))
     else:
-        cursor.execute('''SELECT imageid FROM image_selection WHERE obj_count>=%s AND obj_count<=%s AND label=%s''', (min_obj_count, max_obj_count, target_label))
+        cursor.execute('''SELECT imageid FROM image_selection WHERE obj_count>=%s AND obj_count<=%s AND label IN %s''', (min_obj_count, max_obj_count, target_labels,))
     imageids=cursor.fetchall()    
     return imageids
     

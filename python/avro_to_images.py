@@ -22,7 +22,7 @@ def convert(avro_path, output_foldername):
     process.wait()
 
 def convert_single_avro_file(avro_filename, image_folder):
-    output_record_tags=["fhb_transform", "fvb_transform", "rb_transform"]
+    output_record_tags=["fhb_transform", "fvb_transform", "rb_transform", "sb_transform", "cb_transform"]
     with open(avro_filename, 'rb') as fo:
         avro_reader = reader(fo)
         for record in avro_reader:
