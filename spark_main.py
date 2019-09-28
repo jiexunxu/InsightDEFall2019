@@ -18,9 +18,13 @@ from mmlspark.io import *
 import sys
 import avro_to_images
 import upload_result_to_s3
+from PIL import Image
+import os
+from io import BytesIO
+import boto3
 
 def main(user_selection, user_param, user_email):
-    [bucket, connection, output_foldername, history]=init.init()
+    [bucket, connection, output_foldername, aws_key, aws_access]=init.init()
     imageids=select_images.select(connection, user_selection)
     local_file_name1="tmp1.tmpdump~"
     with open(local_file_name1, 'w') as f:
@@ -49,27 +53,62 @@ def main(user_selection, user_param, user_email):
     images_df=spark.read.format("image").load(s3_image_files) 
 
     L=user_param[0]
-    flip_horizontal_blur_trans=(ImageTransformer().setOutputCol("fhb_transform").resize(L, L).flip(flipCode=1).gaussianKernel(user_param[1], user_param[2]))
-    flip_vertical_blur_trans=(ImageTransformer().setOutputCol("fvb_transform").resize(L, L).flip(flipCode=0).gaussianKernel(user_param[1], user_param[2]))
-    rotate_blur_trans=(ImageTransformer().setOutputCol("rb_transform").resize(L, L).flip(flipCode=0).flip(flipCode=1).gaussianKernel(user_param[1], user_param[2]))
-    scale_blur_trans=(ImageTransformer().setOutputCol("sb_transform").resize(int(L*user_param[3]), int(L*user_param[3])).crop(int(L*(user_param[3]-1)/2), int(L*(user_param[3]-1)/2), L, L).gaussianKernel(user_param[1], user_param[2]))
-    crop_blur_trans=(ImageTransformer().setOutputCol("cb_transform").resize(L, L).crop(int(L*user_param[4]), int(L*user_param[6]), int(L*(user_param[7]-user_param[6])), int(L*(user_param[5]-user_param[4]))).resize(L, L).gaussianKernel(user_param[1], user_param[2]))
+    flip_horizontal_blur_trans=(ImageTransformer().setOutputCol("fhb_").resize(L, L).flip(flipCode=1).gaussianKernel(user_param[1], user_param[2]))
+    flip_vertical_blur_trans=(ImageTransformer().setOutputCol("fvb_").resize(L, L).flip(flipCode=0).gaussianKernel(user_param[1], user_param[2]))
+    rotate_blur_trans=(ImageTransformer().setOutputCol("rb_").resize(L, L).flip(flipCode=0).flip(flipCode=1).gaussianKernel(user_param[1], user_param[2]))
+    scale_blur_trans=(ImageTransformer().setOutputCol("sb_").resize(int(L*user_param[3]), int(L*user_param[3])).crop(int(L*(user_param[3]-1)/2), int(L*(user_param[3]-1)/2), L, L).gaussianKernel(user_param[1], user_param[2]))
+    crop_blur_trans=(ImageTransformer().setOutputCol("cb_").resize(L, L).crop(int(L*user_param[4]), int(L*user_param[6]), int(L*(user_param[7]-user_param[6])), int(L*(user_param[5]-user_param[4]))).resize(L, L).gaussianKernel(user_param[1], user_param[2]))
     result=flip_horizontal_blur_trans.transform(images_df)
     result=flip_vertical_blur_trans.transform(result)
     result=rotate_blur_trans.transform(result)
     result=scale_blur_trans.transform(result)
     result=crop_blur_trans.transform(result)
-  #  result.write.format("avro").save("s3a://jiexunxu-open-image-dataset/"+output_foldername+"images.avro")
-    avro_path="./avro_output/"
-    result.write.format("avro").mode("overwrite").save(avro_path)
-    avro_to_images.convert(avro_path, output_foldername)
-    upload_result_to_s3.upload(bucket, output_foldername)    
-    notify_user.email_and_log(output_foldername, user_email, user_selection, user_param)
+    if len(imageids)>1000:
+        print("You have over 100 images to process, saving .avro to s3")
+        result.write.format("avro").mode("overwrite").save("s3a://jiexunxu-open-image-dataset/output_data/"+output_foldername+"images.avro/")
+    elif len(imageids)>1:
+        result=result.rdd
+        result.foreach(lambda record : saveImages(record, aws_key, aws_access, output_foldername))
+    else:
+        avro_path="./avro_output/"
+        result.write.format("avro").mode("overwrite").save(avro_path)
+        avro_to_images.convert(avro_path, output_foldername)
+        upload_result_to_s3.upload(bucket, output_foldername)    
+        notify_user.email_and_log(output_foldername, user_email, user_selection, user_param)
 
 #user_selection=[9, 10, 1, '/m/01_5g']
 # user param: desired image size, gaussian blur apperture size (odd integer), gaussian blur sigma, scale factor, crop xmin, crop xmax, crop ymin, crop ymax
 #user_param=[0, 0, 1, 0.3, 0.5, 1.8, 2.0, 3]
 #user_email='gexelenor@4nextmail.com'
+
+def saveImages(record, aws_key, aws_access, output_foldername):
+    s3=boto3.resource('s3', aws_access_key_id=aws_key, aws_secret_access_key=aws_access)
+    bucket=s3.Bucket('jiexunxu-open-image-dataset')
+    tags=["fhb_", "fvb_", "rb_", "sb_", "cb_"]
+    for i in range(len(tags)):
+        if tags[i] in record:
+            tag=tags[i]
+            fullname=record[tag]['origin']
+            name=os.path.basename(fullname)
+            width=record[tag]['width']
+            height=record[tag]['height']
+            nChannels=record[tag]['nChannels']
+            image_bytes=record[tag]['data']         
+            if nChannels==3:
+                array=np.frombuffer(image_bytes, dtype='uint8').reshape(height, width, 3)
+                image=Image.fromarray(array, 'RGB')
+                output_obj=bucket.Object("output_data/"+output_foldername+tag+name)
+                file_stream=BytesIO()
+                image.save(file_stream, format='jpeg')
+                output_obj.put(Body=file_stream.getvalue())
+            elif nChannels==1:
+                array=np.frombuffer(image_bytes, dtype='uint8').reshape(height, width)
+                array=np.repeat(array[:, :, np.newaxis], 3, axis=2)
+                image=Image.fromarray(array, 'RGB')
+                output_obj=bucket.Object("output_data/"+output_foldername+tag+name)
+                file_stream=BytesIO()
+                image.save(file_stream, format='jpeg')
+                output_obj.put(Body=file_stream.getvalue())
 
 user_email=sys.argv[1]
 user_param=[int(sys.argv[2]), int(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5]), float(sys.argv[6]), float(sys.argv[7]), float(sys.argv[8]), float(sys.argv[9])]
