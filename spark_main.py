@@ -22,6 +22,10 @@ from PIL import Image
 import os
 from io import BytesIO
 import boto3
+from pyspark.sql import SparkSession
+from pyspark import SparkConf, SparkContext
+
+
 
 def main(user_selection, user_param, user_email):
     [bucket, connection, output_foldername, aws_key, aws_access]=init.init()
@@ -37,16 +41,37 @@ def main(user_selection, user_param, user_email):
     print('selected image count:'+str(len(imageids)))
     
     s3_image_files=[]
+    query=" WHERE imageid='dummyvalue'"
     for imageid in imageids:
         s3_image_files.append("s3a://jiexunxu-open-image-dataset/train_data/"+imageid[0]+".jpg")
+        query+=" OR imageid='"+imageid[0]+"'"
 #        [bbox_descriptor, bbox_xy_enhanced]=process_single_image.process(bucket, connection, imageid[0], user_param, output_foldername)
 #        save_metadata.save(bucket, connection, imageid[0], bbox_descriptor, bbox_xy_enhanced, output_foldername, local_file1, local_file2)
     local_file1.close()
     local_file2.close()
-    with open(local_file_name1, 'rb') as body:
-        bucket.put_object(Key=output_foldername+'selected-train-annotations-human-imagelabels-boxable.csv', Body=body)
-    with open(local_file_name2, 'rb') as body:
-        bucket.put_object(Key=output_foldername+'selected-train-annotations-bbox.csv', Body=body)
+    dbspark=SparkSession.builder.appName("SparkDBSession").getOrCreate() 
+    bbox_df_flip_horizontal=dbspark.read.format("jdbc").option("url",  "jdbc:postgresql://ec2-3-230-4-222.compute-1.amazonaws.com/imagedb").option("query", "SELECT * from image_bbox"+query).option("user", "postgres").option("password", "qwerty").load()
+    bbox_df_flip_horizontal.withColumn("x_min", 1-bbox_df_flip_horizontal.x_min)
+    bbox_df_flip_horizontal.withColumn("x_max", 1-bbox_df_flip_horizontal.x_max)
+    bbox_df_flip_horizontal.withColumn("imageid", "fhb_"+bbox_df_flip_horizontal.imageid)
+    
+    bbox_df_flip_vertical=dbspark.read.format("jdbc").option("url",  "jdbc:postgresql://ec2-3-230-4-222.compute-1.amazonaws.com/imagedb").option("query", "SELECT * from image_bbox"+query).option("user", "postgres").option("password", "qwerty").load()
+    bbox_df_flip_vertical.withColumn("y_min", 1-bbox_df_flip_vertical.y_min)
+    bbox_df_flip_vertical.withColumn("y_max", 1-bbox_df_flip_vertical.y_max)
+    
+    bbox_df_rotate=dbspark.read.format("jdbc").option("url",  "jdbc:postgresql://ec2-3-230-4-222.compute-1.amazonaws.com/imagedb").option("query", "SELECT * from image_bbox"+query).option("user", "postgres").option("password", "qwerty").load()
+    bbox_df_rotate.withColumn("x_min", 1-bbox_df_rotate.x_min)
+    bbox_df_rotate.withColumn("x_max", 1-bbox_df_rotate.x_max)
+    bbox_df_rotate.withColumn("y_min", 1-bbox_df_rotate.y_min)
+    bbox_df_rotate.withColumn("y_max", 1-bbox_df_rotate.y_max)
+    
+    all_bbox=bbox_df_flip_horizontal.union(bbox_df_flip_vertical)
+    all_bbox=all_bbox.union(bbox_df_rotate)
+    all_bbox.coalesce(1).write.csv("s3a://jiexunxu-open-image-dataset/output_data/"+output_foldername+"selected-train-annotations-bbox.csv")
+ #   with open(local_file_name1, 'rb') as body:
+  #      bucket.put_object(Key='output/'+output_foldername+'selected-train-annotations-human-imagelabels-boxable.csv', Body=body)
+  #  with open(local_file_name2, 'rb') as body:
+  #      bucket.put_object(Key='output/'+output_foldername+'selected-train-annotations-bbox.csv', Body=body)
                      
     print('start batch processing in spark')            
     spark = pyspark.sql.SparkSession.builder.appName("BatchImageProcessing").getOrCreate()
