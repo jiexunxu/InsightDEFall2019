@@ -24,10 +24,12 @@ from io import BytesIO
 import boto3
 from pyspark.sql import SparkSession
 from pyspark import SparkConf, SparkContext
-
-
+from pyspark.sql.functions import concat, col, lit
+import copy
+import s3fs
 
 def main(user_selection, user_param, user_email):
+    use_spark_db=False
     [bucket, connection, output_foldername, aws_key, aws_access]=init.init()
     imageids=select_images.select(connection, user_selection)
     local_file_name1="tmp1.tmpdump~"
@@ -49,31 +51,84 @@ def main(user_selection, user_param, user_email):
 #        save_metadata.save(bucket, connection, imageid[0], bbox_descriptor, bbox_xy_enhanced, output_foldername, local_file1, local_file2)
     local_file1.close()
     local_file2.close()
-    dbspark=SparkSession.builder.appName("SparkDBSession").getOrCreate() 
-    bbox_df_flip_horizontal=dbspark.read.format("jdbc").option("url",  "jdbc:postgresql://ec2-3-230-4-222.compute-1.amazonaws.com/imagedb").option("query", "SELECT * from image_bbox"+query).option("user", "postgres").option("password", "qwerty").load()
-    bbox_df_flip_horizontal.withColumn("x_min", 1-bbox_df_flip_horizontal.x_min)
-    bbox_df_flip_horizontal.withColumn("x_max", 1-bbox_df_flip_horizontal.x_max)
-    bbox_df_flip_horizontal.withColumn("imageid", "fhb_"+bbox_df_flip_horizontal.imageid)
-    
-    bbox_df_flip_vertical=dbspark.read.format("jdbc").option("url",  "jdbc:postgresql://ec2-3-230-4-222.compute-1.amazonaws.com/imagedb").option("query", "SELECT * from image_bbox"+query).option("user", "postgres").option("password", "qwerty").load()
-    bbox_df_flip_vertical.withColumn("y_min", 1-bbox_df_flip_vertical.y_min)
-    bbox_df_flip_vertical.withColumn("y_max", 1-bbox_df_flip_vertical.y_max)
-    
-    bbox_df_rotate=dbspark.read.format("jdbc").option("url",  "jdbc:postgresql://ec2-3-230-4-222.compute-1.amazonaws.com/imagedb").option("query", "SELECT * from image_bbox"+query).option("user", "postgres").option("password", "qwerty").load()
-    bbox_df_rotate.withColumn("x_min", 1-bbox_df_rotate.x_min)
-    bbox_df_rotate.withColumn("x_max", 1-bbox_df_rotate.x_max)
-    bbox_df_rotate.withColumn("y_min", 1-bbox_df_rotate.y_min)
-    bbox_df_rotate.withColumn("y_max", 1-bbox_df_rotate.y_max)
-    
-    all_bbox=bbox_df_flip_horizontal.union(bbox_df_flip_vertical)
-    all_bbox=all_bbox.union(bbox_df_rotate)
-    all_bbox.coalesce(1).write.csv("s3a://jiexunxu-open-image-dataset/output_data/"+output_foldername+"selected-train-annotations-bbox.csv")
+    if use_spark_db:
+        dbspark=SparkSession.builder.appName("SparkDBSession").getOrCreate() 
+        bbox_df_flip_horizontal=dbspark.read.format("jdbc").option("url",  "jdbc:postgresql://ec2-3-230-4-222.compute-1.amazonaws.com/imagedb").option("query", "SELECT * from image_bbox"+query).option("user", "postgres").option("password", "qwerty").load()
+        bbox_df_flip_vertical=dbspark.read.format("jdbc").option("url",  "jdbc:postgresql://ec2-3-230-4-222.compute-1.amazonaws.com/imagedb").option("query", "SELECT * from image_bbox"+query).option("user", "postgres").option("password", "qwerty").load()
+        bbox_df_rotate=dbspark.read.format("jdbc").option("url",  "jdbc:postgresql://ec2-3-230-4-222.compute-1.amazonaws.com/imagedb").option("query", "SELECT * from image_bbox"+query).option("user", "postgres").option("password", "qwerty").load()
+        bbox_df_scale=dbspark.read.format("jdbc").option("url",  "jdbc:postgresql://ec2-3-230-4-222.compute-1.amazonaws.com/imagedb").option("query", "SELECT * from image_bbox"+query).option("user", "postgres").option("password", "qwerty").load()
+        bbox_df_crop=dbspark.read.format("jdbc").option("url",  "jdbc:postgresql://ec2-3-230-4-222.compute-1.amazonaws.com/imagedb").option("query", "SELECT * from image_bbox"+query).option("user", "postgres").option("password", "qwerty").load()
+        output_s3_name="s3a://jiexunxu-open-image-dataset/output_data/"+output_foldername+"selected-train-annotations-bbox"
+        bbox_df_flip_horizontal.withColumn("x_min", 1-bbox_df_flip_horizontal.x_min).withColumn("x_max", 1-bbox_df_flip_horizontal.x_max).withColumn("imageid", concat(lit("fhb_"), bbox_df_flip_horizontal.imageid)).write.csv(output_s3_name+"-flip-horizontal")
+        bbox_df_flip_vertical.withColumn("y_min", 1-bbox_df_flip_vertical.y_min).withColumn("y_max", 1-bbox_df_flip_vertical.y_max).withColumn("imageid", concat(lit("fvb_"), bbox_df_flip_vertical.imageid)).write.csv(output_s3_name+"-flip-vertical")
+        bbox_df_rotate.withColumn("x_min", 1-bbox_df_rotate.x_min).withColumn("x_max", 1-bbox_df_rotate.x_max).withColumn("y_min", 1-bbox_df_rotate.y_min).withColumn("y_max", 1-bbox_df_rotate.y_max).withColumn("imageid", concat(lit("rb_"), bbox_df_rotate.imageid)).write.csv(output_s3_name+"-rotate")
+        bbox_df_scale.withColumn("x_min", (bbox_df_scale.x_min-(user_param[3]-1)/2)/(2-user_param[3])).withColumn("x_max", (bbox_df_scale.x_max-(user_param[3]-1)/2)/(2-user_param[3])).withColumn("y_min", (bbox_df_scale.y_min-(user_param[3]-1)/2)/(2-user_param[3])).withColumn("y_max", (bbox_df_scale.y_max-(user_param[3]-1)/2)/(2-user_param[3])).withColumn("imageid", concat(lit("sb_"), bbox_df_scale.imageid)).filter((bbox_df_scale.x_min>=float(0.0)) & (bbox_df_scale.x_max<=float(1.0)) & (bbox_df_scale.y_min>=float(0.0)) & (bbox_df_scale.y_max<=float(1.0))).write.csv(output_s3_name+"-scale")
+        bbox_df_crop.withColumn("x_min", (bbox_df_crop.x_min-user_param[4])/(user_param[5]-user_param[4])).withColumn("x_max", (bbox_df_crop.x_max-user_param[4])/(user_param[5]-user_param[4])).withColumn("y_min", (bbox_df_crop.y_min-user_param[6])/(user_param[7]-user_param[6])).withColumn("y_max", (bbox_df_crop.y_max-user_param[6])/(user_param[7]-user_param[6])).withColumn("imageid", concat(lit("cb_"), bbox_df_crop.imageid)).filter((bbox_df_crop.x_min>=float(0.0)) & (bbox_df_crop.x_max<=float(1.0)) & (bbox_df_crop.y_min>=float(0.0)) & (bbox_df_crop.y_max<=float(1.0))).write.csv(output_s3_name+"-crop")
+       # bbox_df_flip_horizontal.union(bbox_df_flip_vertical).union(bbox_df_rotate).union(bbox_df_scale).union(bbox_df_crop).coalesce(1).write.csv("s3a://jiexunxu-open-image-dataset/output_data/"+output_foldername+"selected-train-annotations-bbox.csv")
  #   with open(local_file_name1, 'rb') as body:
   #      bucket.put_object(Key='output/'+output_foldername+'selected-train-annotations-human-imagelabels-boxable.csv', Body=body)
   #  with open(local_file_name2, 'rb') as body:
   #      bucket.put_object(Key='output/'+output_foldername+'selected-train-annotations-bbox.csv', Body=body)
-                     
-    print('start batch processing in spark')            
+    else:
+        cursor=connection.cursor()
+        cursor.execute("SELECT * from image_bbox"+query)
+        bbox_descriptors=cursor.fetchall()
+        num_of_rows=len(bbox_descriptors)
+        bbox_flip_horizontal=np.zeros((num_of_rows, 4))
+        bbox_flip_horizontal[:, 0]=[row[4] for row in bbox_descriptors]
+        bbox_flip_horizontal[:, 1]=[row[5] for row in bbox_descriptors]
+        bbox_flip_horizontal[:, 2]=[row[6] for row in bbox_descriptors]
+        bbox_flip_horizontal[:, 3]=[row[7] for row in bbox_descriptors]
+        bbox_flip_vertical=np.copy(bbox_flip_horizontal)
+        bbox_rotate=np.copy(bbox_flip_horizontal)
+        bbox_scale=np.copy(bbox_flip_horizontal)
+        bbox_crop=np.copy(bbox_flip_horizontal)
+        
+        bbox_flip_horizontal[:, 0]=1-bbox_flip_horizontal[:, 0]
+        bbox_flip_horizontal[:, 1]=1-bbox_flip_horizontal[:, 1]
+        
+        bbox_flip_vertical[:, 2]=1-bbox_flip_vertical[:, 2]
+        bbox_flip_vertical[:, 3]=1-bbox_flip_vertical[:, 3]
+        
+        bbox_rotate[:, 0]=1-bbox_rotate[:, 0]
+        bbox_rotate[:, 1]=1-bbox_rotate[:, 1]
+        bbox_rotate[:, 2]=1-bbox_rotate[:, 2]
+        bbox_rotate[:, 3]=1-bbox_rotate[:, 3]
+        
+        bbox_scale[:, 0]=bbox_scale[:, 0]-(user_param[3]-1)/2
+        bbox_scale[:, 1]=bbox_scale[:, 1]-(user_param[3]-1)/2
+        bbox_scale[:, 2]=bbox_scale[:, 2]-(user_param[3]-1)/2
+        bbox_scale[:, 3]=bbox_scale[:, 3]-(user_param[3]-1)/2
+        bbox_scale[np.logical_or(np.logical_or(bbox_scale[:, 0]<0, bbox_scale[:, 1]>1), np.logical_or(bbox_scale[:, 2]<0, bbox_scale[:, 3]>1)), 0]=-1
+        
+        bbox_crop[:, 0]=(bbox_crop[:, 0]--user_param[4])/(user_param[5]-user_param[4])
+        bbox_crop[:, 1]=(bbox_crop[:, 1]--user_param[4])/(user_param[5]-user_param[4])
+        bbox_crop[:, 2]=(bbox_crop[:, 2]--user_param[6])/(user_param[7]-user_param[6])
+        bbox_crop[:, 3]=(bbox_crop[:, 3]--user_param[6])/(user_param[7]-user_param[6])
+        bbox_crop[np.logical_or(np.logical_or(bbox_crop[:, 0]<0, bbox_crop[:, 1]>1), np.logical_or(bbox_crop[:, 2]<0, bbox_crop[:, 3]>1)), 0]=-1
+        
+        s3=s3fs.S3FileSystem(anon=False)
+        with s3.open("jiexunxu-open-image-dataset/output_data/"+output_foldername+"selected-train-annotations-bbox.csv", "w") as f:
+            for i in range(len(bbox_descriptors)):
+                row=bbox_descriptors[i]
+                f.write("fhb_"+row[0]+","+row[1]+","+row[2]+","+row[3]+","+str(bbox_flip_horizontal[i][0])+","+str(bbox_flip_horizontal[i][1])+","+str(bbox_flip_horizontal[i][2])+","+str(bbox_flip_horizontal[i][3])+","+row[8]+","+row[9]+","+row[10]+","+row[11]+","+row[12]+"\n")
+            for i in range(len(bbox_descriptors)):
+                row=bbox_descriptors[i]
+                f.write("fvb_"+row[0]+","+row[1]+","+row[2]+","+row[3]+","+str(bbox_flip_vertical[i][0])+","+str(bbox_flip_vertical[i][1])+","+str(bbox_flip_vertical[i][2])+","+str(bbox_flip_vertical[i][3])+","+row[8]+","+row[9]+","+row[10]+","+row[11]+","+row[12]+"\n")
+            for i in range(len(bbox_descriptors)):
+                row=bbox_descriptors[i]
+                f.write("rb_"+row[0]+","+row[1]+","+row[2]+","+row[3]+","+str(bbox_rotate[i][0])+","+str(bbox_rotate[i][1])+","+str(bbox_rotate[i][2])+","+str(bbox_rotate[i][3])+","+row[8]+","+row[9]+","+row[10]+","+row[11]+","+row[12]+"\n")
+            for i in range(len(bbox_descriptors)):
+                row=bbox_descriptors[i]
+                if bbox_scale[i][0]>=0:
+                    f.write("sb_"+row[0]+","+row[1]+","+row[2]+","+row[3]+","+str(bbox_scale[i][0])+","+str(bbox_scale[i][1])+","+str(bbox_scale[i][2])+","+str(bbox_scale[i][3])+","+row[8]+","+row[9]+","+row[10]+","+row[11]+","+row[12]+"\n")
+            for i in range(len(bbox_descriptors)):
+                row=bbox_descriptors[i]
+                if bbox_crop[i][0]>=0:
+                    f.write("cb_"+row[0]+","+row[1]+","+row[2]+","+row[3]+","+str(bbox_crop[i][0])+","+str(bbox_crop[i][1])+","+str(bbox_crop[i][2])+","+str(bbox_crop[i][3])+","+row[8]+","+row[9]+","+row[10]+","+row[11]+","+row[12]+"\n")
+
+                 
+    print("start batch processing in spark")            
     spark = pyspark.sql.SparkSession.builder.appName("BatchImageProcessing").getOrCreate()
     images_df=spark.read.format("image").load(s3_image_files) 
 
