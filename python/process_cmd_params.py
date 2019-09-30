@@ -6,8 +6,8 @@ import csv
 def process():
     # read the labels file, to be used to convert user input labels to strings that other part of the application can recognize
     label_dict={}    
-    with open("../data/labels.csv") as f:
-        reader=csv.reader(f, delimiter=',')
+    with open("./data/labels.csv") as f:
+        csv_reader=csv.reader(f, delimiter=',')
         for row in csv_reader:
             label_dict[row[1]]=row[0]
     # process command line arguments        

@@ -3,7 +3,7 @@
 import smtplib
 from email.message import EmailMessage
 
-def email_and_log(output_foldername, user_email, user_selection, user_param):
+def email_and_log(output_foldername, user_email, user_selection, user_param, user_history):
     def email():
         msg=EmailMessage()
         full_path="http://jiexunxu-open-image-dataset.s3.amazonaws.com/output_data/"+output_foldername+"result.zip"

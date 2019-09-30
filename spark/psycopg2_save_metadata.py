@@ -3,7 +3,7 @@
 import numpy as np
 import s3fs
 
-def save(connection, query, output_foldername):
+def save(connection, query, user_param, output_foldername):
     cursor=connection.cursor()
     cursor.execute(query)
     # Get all bouding box entries that match the imageids in the query
@@ -43,8 +43,8 @@ def save(connection, query, output_foldername):
     bbox_scale[:, 2]=bbox_scale[:, 2]-(sc-1)/2
     bbox_scale[:, 3]=bbox_scale[:, 3]-(sc-1)/2
     # compute bounding boxes for croping the image into user defined sizes
-    bbox_crop[:, 0]=(bbox_crop[:, 0]-cx1])/(cx2-cx1)
-    bbox_crop[:, 1]=(bbox_crop[:, 1]-cx1))/(cx2-cx1)
+    bbox_crop[:, 0]=(bbox_crop[:, 0]-cx1)/(cx2-cx1)
+    bbox_crop[:, 1]=(bbox_crop[:, 1]-cx1)/(cx2-cx1)
     bbox_crop[:, 2]=(bbox_crop[:, 2]-cy1)/(cy2-cy1)
     bbox_crop[:, 3]=(bbox_crop[:, 3]-cy1)/(cy2-cy1)
     # save the updated metadata to s3
