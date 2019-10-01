@@ -33,8 +33,10 @@ def process():
         user_param[7]=1
     user_selection=[int(sys.argv[10]), int(sys.argv[11]), int(sys.argv[12])]
     # convert the input labels to strings that other part of the application recognizes
+    user_labels=[]
     for i in range(13, len(sys.argv)):
         key=sys.argv[i]
         if key in label_dict:
             user_selection.append(label_dict[key])
-    return [user_email, user_param, user_selection]
+            user_labels.append(key)
+    return [user_email, user_param, user_selection, user_labels]

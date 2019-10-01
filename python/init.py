@@ -25,5 +25,5 @@ def init():
                 user_history[user_email]=[]
             for i in range(1, len(items)):
                 user_history[user_email].append(items[i])
-    return [internal_params, bucket, connection, output_foldername, user_history, aws_key_id, aws_access_key, db_password]    
+    return [internal_params, bucket, connection, output_foldername, aws_key_id, aws_access_key, db_password]    
 

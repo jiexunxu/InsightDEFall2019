@@ -25,8 +25,8 @@ def run_spark_job():
         query=query[:-3]
         return [s3_image_files, query]
 
-    [user_email, user_param, user_selection]=process_cmd_params.process()
-    [internal_params, bucket, connection, output_foldername, user_history, aws_key, aws_access, db_password]=init.init()
+    [user_email, user_param, user_selection, user_labels]=process_cmd_params.process()
+    [internal_params, bucket, connection, output_foldername, aws_key, aws_access, db_password]=init.init()
     imageids=select_images.select(connection, user_selection)
     [s3_image_files, query]=build_query_and_s3_image_files(imageids)
     image_count=len(imageids)
@@ -42,9 +42,9 @@ def run_spark_job():
     print("start batch processing in spark")       
     start_time=time.time()
     images_df=spark_process_images.transform(s3_image_files, user_param)
-    spark_save_images.save(internal_params, images_df, image_count, bucket, aws_key, aws_access, output_foldername)
+    is_large_scale_image_save=spark_save_images.save(internal_params, images_df, image_count, bucket, aws_key, aws_access, output_foldername)
     print("saving images time: "+str(time.time()-start_time))
 
-    notify_user.email_and_log(output_foldername, user_email, user_selection, user_param, user_history)
+    notify_user.email_and_log(output_foldername, connection, user_email, user_selection, user_param, user_labels, is_large_scale_image_save)
     
 run_spark_job()
