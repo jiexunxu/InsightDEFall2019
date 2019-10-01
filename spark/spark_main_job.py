@@ -33,7 +33,7 @@ def run_spark_job():
     print('selected image count:'+str(image_count))
     
     start_time=time.time()
-    if image_count>internal_params[2]:
+    if image_count>internal_params[1]:
         spark_save_metadata.save(output_foldername, query, db_password, user_param)
     else:
         psycopg2_save_metadata.save(connection, query, user_param, output_foldername)

@@ -21,15 +21,19 @@ class ReusableForm(Form):
     scale = TextField('', validators=[validators.required()])
     crop = TextField('', validators=[validators.required()])
     blur = TextField('', validators=[validators.required()])
-            
+
+def submit_request(request):
+    command=preprocess_query.preprocess(request)
+    process=subprocess.Popen(command.split())
+    flash("Your request has been submitted. When it is finished you will receive an email. Thank you for your patience.")
+
 @app.route("/", methods=['GET', 'POST'])
 def hello():
     form = ReusableForm(request.form)
-
+    
     if request.method == 'POST':
         if form.validate():
-            command=preprocess_query.preprocess(request)
-            flash("Your request has been submitted. When it is finished you will receive an email. Thank you for your patience.")
+            submit_request(request)
         else:
             flash('Error: All Fields are Required')
 

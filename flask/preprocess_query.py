@@ -18,9 +18,9 @@ def preprocess(request):
     
     try:
         tokens=obj_count.split(',')
-        obj_count=[tokens[0] tokens[1]]
+        obj_count=[tokens[0], tokens[1]]
     except:
-        obj_count=['0' '99']
+        obj_count=['0', '99']
     try:
         tokens=labels.split(',')
         labels=[]
@@ -30,15 +30,17 @@ def preprocess(request):
         labels=['Apple']
     try:
         tokens=crop.split(',')
-        crop=[tokens[0] tokens[1] tokens[2] tokens[3]]
+        crop=[tokens[0], tokens[1], tokens[2], tokens[3]]
     except:
-        crop=['0.0' '1.0' '0.0' '1.0']
+        crop=['0.0', '1.0', '0.0', '1.0']
     try:
         tokens=blur.split(',')
-        blur=[tokens[0] tokens[1]]
+        blur=[tokens[0], tokens[1]]
     except:
-        blur=[1 0.0]
+        blur=[1, 0.0]
     
-    arguments="./spark/spark_main_job.py  "+email+" "+image_size+" "+blur[0]+" "+blur[1]+" "+scale+" "+crop[0]+" "+crop[1]+" "+crop[2]+" "+crop[3]+" "+obj_count[0]+" "+obj_count[1]+" "+google_only+" "+labels    
-    command="spark-submit --driver-class-path ~/postgresql-42.2.8.jar --jars ~/postgresql-42.2.8.jar --packages org.apache.spark:spark-avro_2.11:2.4.0,com.microsoft.ml.spark:mmlspark_2.11:0.18.1 "+arguments
+    arguments="./spark/spark_main_job.py  "+email+" "+image_size+" "+blur[0]+" "+blur[1]+" "+scale+" "+crop[0]+" "+crop[1]+" "+crop[2]+" "+crop[3]+" "+obj_count[0]+" "+obj_count[1]+" "+google_only
+    for label in labels:
+        arguments+=" "+label 
+    command="spark-submit --driver-class-path /home/ubuntu/postgresql-42.2.8.jar --jars /home/ubuntu/postgresql-42.2.8.jar --packages org.apache.spark:spark-avro_2.11:2.4.0,com.microsoft.ml.spark:mmlspark_2.11:0.18.1 "+arguments
     return command

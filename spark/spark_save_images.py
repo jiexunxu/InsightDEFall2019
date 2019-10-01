@@ -2,7 +2,6 @@
 
 import boto3
 import os
-import avro_to_images
 import upload_result_to_s3
 import numpy as np
 from PIL import Image
