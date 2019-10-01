@@ -12,7 +12,33 @@ def process():
             label_dict[row[1]]=row[0]
     # process command line arguments        
     user_email=sys.argv[1]
-    user_param=[int(sys.argv[2]), int(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5]), float(sys.argv[6]), float(sys.argv[7]), float(sys.argv[8]), float(sys.argv[9])]
+    user_param=[]
+    # append user supplied image transform parameters and handle exceptions
+    try:
+        user_param.append(int(sys.argv[2]))
+    except:
+        user_param.append(256)
+    try:
+        user_param.append(int(sys.argv[3]))
+        user_param.append(float(sys.argv[4]))
+    except:
+        user_param.append(1)
+        user_param.append(0.0)
+    try:
+        user_param.append(float(sys.argv[5]))     
+    except:
+        user_param.append(1.0)
+    try:
+        user_param.append(float(sys.argv[6]))
+        user_param.append(float(sys.argv[7]))     
+        user_param.append(float(sys.argv[8]))     
+        user_param.append(float(sys.argv[9]))
+    except:
+        user_param.append(0.0)
+        user_param.append(1.0)   
+        user_param.append(0.0)
+        user_param.append(1.0)  
+    
     if user_param[1]%2==0: # gaussian blur apperture size must be odd integer
         user_param[1]=user_param[1]+1
     if user_param[3]<1: # scale factor must be greater than or equal to 1.0
@@ -31,7 +57,19 @@ def process():
     if user_param[7]<=user_param[6]: # bottom crop point must be greater than top crop point
         user_param[6]=0
         user_param[7]=1
-    user_selection=[int(sys.argv[10]), int(sys.argv[11]), int(sys.argv[12])]
+    
+    # append user supplied image selection parameters and handle exceptions
+    user_selection=[]
+    try:
+        user_selection.append(int(sys.argv[10]))
+        user_selection.append(int(sys.argv[11]))
+    except:
+        user_selection.append(0)
+        user_selection.append(99)
+    try:
+        user_selection.append(int(sys.argv[12]))
+    except:
+        user_selection.append(0)
     # convert the input labels to strings that other part of the application recognizes
     user_labels=[]
     for i in range(13, len(sys.argv)):

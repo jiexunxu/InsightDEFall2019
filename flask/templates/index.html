@@ -1,6 +1,6 @@
 <html>
   <head>
-     <title>Demo Form</title>
+     <title>BOSA</title>
      <link rel="stylesheet" media="screen" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +10,7 @@
 
     <div class="container"><br>
       <center>
-        <h2>Flask Web Form Demo</h2>
+        <h2>Welcome to BOSA (Boxable Open-image Selector and Augmentor)</h2>
       </center>
     </div>
 
@@ -20,18 +20,27 @@
       <form  action="" method="post" role="form">
         {{ form.csrf }}
         <div class="form-group">
-          <label for="name">Name:</label>
-          <input type="text" class="form-control" id="name" name="name" placeholder="Name?">
+          <label for="email">Your email:</label>
+          <input type="text" class="form-control" id="email" name="email">
             <br>
-          <label for="surname">Surame:</label>
-          <input type="text" class="form-control" id="surname" name="surname" placeholder="Surname?">
-	    <br>
-	  <label for="email">Email:</label>
-	  <input type="text" class="form-control" id="email" name="email" placeholder="Your email address.">
-	    <br>
-	  <label for="password">Password:</label>
-	  <input type="password" class="form-control" id="password" name="password" placeholder="Enter a password.">
-	</div>
+            <label for="obj_count">#Objects in image (2 integers, selected image will contain #objects between these two numbers):</label>
+            <input type="text" class="form-control" id="obj_count" name="obj_count" placeholder="3,10">
+            <br>
+            <label for="labels">#Image labels (Images contain any of the typed labels below will be selected):</label>
+            <input type="text" class="form-control" id="labels" name="labels" placeholder="Apple,Bicycle,Chopsticks">
+            <br>
+            <label for="image_size">Desired output image dimension (2^N integer recommended):</label>
+            <input type="text" class="form-control" id="image_size" name="image_size" placeholder="256">
+	        <br>
+	        <label for="scale">Scale transform factor (must be >=1.0):</label>
+	        <input type="text" class="form-control" id="scale" name="scale" placeholder="1.2">
+	        <br>
+	        <label for="crop">Crop boundaries (4 numbers between 0 and 1, left, right, top and bottom):</label>
+	        <input type="text" class="form-control" id="crop" name="crop" placeholder="0.1,0.8,0.3,0.7">
+	        <br>
+	      <label for="blur">Gaussian blur size and sigma (odd integer and floating point):</label>
+	      <input type="text" class="form-control" id="blur" name="blur" placeholder="7,1.3">
+	    </div>
         <br>													   
         <center>
           <button type="submit" class="btn btn-success">Submit</button>
