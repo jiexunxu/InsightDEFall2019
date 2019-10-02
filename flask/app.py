@@ -15,13 +15,15 @@ app.config['SECRET_KEY'] = 'SjdnUends821Jsdlkvxh391ksdODnejdDw'
 
 class ReusableForm(Form):
     email = TextField('', validators=[validators.required()])
-    obj_count = TextField('', validators=[validators.required()])
+    min_obj = TextField('', validators=[validators.required()])
+    max_obj = TextField('', validators=[validators.required()])
     box_source = TextField('', validators=[validators.required()])
     labels = TextField('', validators=[validators.required()])
     image_size = TextField('', validators=[validators.required()])
     scale = TextField('', validators=[validators.required()])
     crop = TextField('', validators=[validators.required()])
-    blur = TextField('', validators=[validators.required()])
+    blur_size = TextField('', validators=[validators.required()])
+    blur_sigma = TextField('', validators=[validators.required()])
 
 def submit_request(request):
     command=preprocess_query.preprocess(request)

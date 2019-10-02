@@ -43,7 +43,7 @@ def email_and_log(output_foldername, connection, user_email, user_selection, use
     
     def log():
         history_str="Image size="+str(user_param[0])+", Gaussian aperture="+str(user_param[1])+", Gaussian sigma="+str(user_param[2])+", Scale="+str(user_param[3])+", Crop Xmin="+str(user_param[4])+", Crop Xmax="+str(user_param[5])+", Crop Ymin="+str(user_param[6])+", Crop Ymax="+str(user_param[7])+", Min #Objects="+str(user_selection[0])+", Max #Objects="+str(user_selection[1])
-        if user_selection[2]=='1':
+        if user_selection[2]==1:
             history_str+=", Google verfied boxes only=True, Labels="
         else:
             history_str+=", Google verfied boxes only=False, Labels="

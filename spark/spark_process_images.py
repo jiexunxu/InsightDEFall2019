@@ -11,9 +11,9 @@ def transform(internal_params, s3_image_files, user_param):
     sc_conf=SparkConf().setAppName("BatchImageProcessing")
     if(len(s3_image_files)>internal_params[0]):
         sc_conf.setMaster("spark://ip-10-0-0-5:7077")
-#        sc_conf.set("spark.executor.memory", "4g")
-#        sc_conf.set("spark.executor.cores", 1)
-#        sc_conf.set("spark.num.executors", 8)
+        sc_conf.set("spark.executor.memory", "4g")
+        sc_conf.set("spark.executor.cores", 2)
+        sc_conf.set("spark.num.executors", 4)
     spark = pyspark.sql.SparkSession.builder.config(conf=sc_conf).getOrCreate()
     images_df=spark.read.format("image").load(s3_image_files)
     # user provided resized image dimension

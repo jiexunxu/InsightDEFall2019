@@ -10,6 +10,7 @@ import spark_save_metadata
 import psycopg2_save_metadata
 import spark_process_images
 import spark_save_images
+import spark_save_images_big
 import notify_user
 
 
@@ -43,8 +44,10 @@ def run_spark_job():
     start_time=time.time()
     images_df=spark_process_images.transform(internal_params, s3_image_files, user_param)
     is_large_scale_image_save=spark_save_images.save(internal_params, images_df, image_count, bucket, aws_key, aws_access, output_foldername)
+  #  is_large_scale_image_save=True
+  #  spark_save_images_big.transform(internal_params, s3_image_files, user_param,aws_key, aws_access, output_foldername)
     print("saving images time: "+str(time.time()-start_time))
-
+    
     notify_user.email_and_log(output_foldername, connection, user_email, user_selection, user_param, user_labels, is_large_scale_image_save)
     
 run_spark_job()
