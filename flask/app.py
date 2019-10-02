@@ -16,6 +16,7 @@ app.config['SECRET_KEY'] = 'SjdnUends821Jsdlkvxh391ksdODnejdDw'
 class ReusableForm(Form):
     email = TextField('', validators=[validators.required()])
     obj_count = TextField('', validators=[validators.required()])
+    box_source = TextField('', validators=[validators.required()])
     labels = TextField('', validators=[validators.required()])
     image_size = TextField('', validators=[validators.required()])
     scale = TextField('', validators=[validators.required()])

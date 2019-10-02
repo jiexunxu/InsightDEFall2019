@@ -41,7 +41,7 @@ def run_spark_job():
 
     print("start batch processing in spark")       
     start_time=time.time()
-    images_df=spark_process_images.transform(s3_image_files, user_param)
+    images_df=spark_process_images.transform(internal_params, s3_image_files, user_param)
     is_large_scale_image_save=spark_save_images.save(internal_params, images_df, image_count, bucket, aws_key, aws_access, output_foldername)
     print("saving images time: "+str(time.time()-start_time))
 

@@ -1,13 +1,19 @@
 # Batch spark job for saving bounding box metadata
 
+from pyspark.conf import SparkConf
 from pyspark.sql import SparkSession
 from pyspark import SparkConf, SparkContext
 from pyspark.sql.functions import concat, col, lit
 
 def save(output_foldername, query, db_password,  user_param):
     # Create 5 copies of the dataframe because we need to save the metadata for 5 types of transforms
-    dbspark=SparkSession.builder.appName("SparkDBSession").getOrCreate() 
-    bbox_df_flip_horizontal=dbspark.read.format("jdbc").option("url",  "jdbc:postgresql://ec2-3-230-4-222.compute-1.amazonaws.com/imagedb").option("query", query).option("user", "postgres").option("password", db_password).load().cache()
+    sc_conf=SparkConf().setAppName("SaveBBoxMetadataSession")
+    sc_conf.setMaster("spark://ip-10-0-0-5:7077")
+#    sc_conf.set("spark.executor.memory", "4g")
+#    sc_conf.set("spark.executor.cores", 1)
+#    sc_conf.set("spark.executor.instances", 8)
+    dbspark = SparkSession.builder.config(conf=sc_conf).getOrCreate()
+    bbox_df_flip_horizontal=dbspark.read.format("jdbc").option("url",  "jdbc:postgresql://ec2-3-230-4-222.compute-1.amazonaws.com/imagedb").option("query", query).option("user", "postgres").option("password", db_password).load()
     bbox_df_flip_vertical=bbox_df_flip_horizontal.select("*")
     bbox_df_rotate=bbox_df_flip_horizontal.select("*")
     bbox_df_scale=bbox_df_flip_horizontal.select("*")

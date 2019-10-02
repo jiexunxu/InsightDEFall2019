@@ -1,14 +1,21 @@
 # Batch transform images with spark
 
+from pyspark.conf import SparkConf
 from pyspark.sql import SparkSession
 from mmlspark.opencv import toNDArray
 from mmlspark.opencv import ImageTransformer
 from mmlspark.io import *
 
-def transform(s3_image_files, user_param):
+def transform(internal_params, s3_image_files, user_param):
     # Load all images from s3
-    spark = pyspark.sql.SparkSession.builder.appName("BatchImageProcessing").getOrCreate()
-    images_df=spark.read.format("image").load(s3_image_files).cache()
+    sc_conf=SparkConf().setAppName("BatchImageProcessing")
+    if(len(s3_image_files)>internal_params[0]):
+        sc_conf.setMaster("spark://ip-10-0-0-5:7077")
+#        sc_conf.set("spark.executor.memory", "4g")
+#        sc_conf.set("spark.executor.cores", 1)
+#        sc_conf.set("spark.num.executors", 8)
+    spark = pyspark.sql.SparkSession.builder.config(conf=sc_conf).getOrCreate()
+    images_df=spark.read.format("image").load(s3_image_files)
     # user provided resized image dimension
     L=user_param[0]
     # user provided gaussian blur parameters

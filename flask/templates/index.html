@@ -1,71 +1,85 @@
 <html>
-  <head>
-     <title>BOSA</title>
-     <link rel="stylesheet" media="screen" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  </head>
-  <body>
-
-    <div class="container"><br>
-      <center>
-        <h2>Welcome to BOSA (Boxable Open-image Selector and Augmentor)</h2>
-      </center>
-    </div>
-
-    <div class=container"><br>
-    <div class="row align-items-center justify-content-center">
-    <div class="col-md-4">
-      <form  action="" method="post" role="form">
-        {{ form.csrf }}
-        <div class="form-group">
-          <label for="email">Your email:</label>
-          <input type="text" class="form-control" id="email" name="email">
+    <head>
+        <title>BOSA</title>
+        <link rel="stylesheet" media="screen" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    
+    <body>
+        <div style="background-image: url({{ url_for('static', filename='bgimage.jpg')}}); background-size: cover">
+        <div class="container">
             <br>
-            <label for="obj_count">#Objects in image (2 integers, selected image will contain #objects between these two numbers):</label>
-            <input type="text" class="form-control" id="obj_count" name="obj_count" placeholder="3,10">
-            <br>
-            <label for="labels">#Image labels (Images contain any of the typed labels below will be selected):</label>
-            <input type="text" class="form-control" id="labels" name="labels" placeholder="Apple,Bicycle,Chopsticks">
-            <br>
-            <label for="image_size">Desired output image dimension (2^N integer recommended):</label>
-            <input type="text" class="form-control" id="image_size" name="image_size" placeholder="256">
-	        <br>
-	        <label for="scale">Scale transform factor (must be >=1.0):</label>
-	        <input type="text" class="form-control" id="scale" name="scale" placeholder="1.2">
-	        <br>
-	        <label for="crop">Crop boundaries (4 numbers between 0 and 1, left, right, top and bottom):</label>
-	        <input type="text" class="form-control" id="crop" name="crop" placeholder="0.1,0.8,0.3,0.7">
-	        <br>
-	      <label for="blur">Gaussian blur size and sigma (odd integer and floating point):</label>
-	      <input type="text" class="form-control" id="blur" name="blur" placeholder="7,1.3">
-	    </div>
-        <br>													   
-        <center>
-          <button type="submit" class="btn btn-success">Submit</button>
-        </center>
-      </form>
-      <br>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-        {% for message in messages %}
-            {% if "Error" not in message[1]: %}
-                <div class="alert alert-info">
-                <strong>Success! </strong> {{ message[1] }}
+            <center><h2><b>Welcome to <em>BOSA</em> </b><i><p><b>B</b>oxable <b>O</b>pen-image <b>S</b>elector and <b>A</b>ugmentor</p></i></h2></center>
+        </div>
+        <div class=container"><br>
+            <form  action="" method="post" role="form">
+            <div class="row align-items-center justify-content-center"> 
+                <div class="form-group">
+                    {{ form.csrf }}
+                    <div class="row align-items-center justify-content-center">   
+                        <div class="col-md-12"> 
+                            {% with messages = get_flashed_messages(with_categories=true) %}
+                                {% if messages %}
+                            {% for message in messages %}
+                                {% if "Error" not in message[1]: %}
+                                    <div class="alert alert-info">
+                                    <strong>Success! </strong> {{ message[1] }}
+                                    </div>
+                                {% endif %}
+                                {% if "Error" in message[1]: %}
+                                    <div class="alert alert-danger">
+                                    <strong>Error: </strong> {{ message[1] }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                                {% endif %}
+                            {% endwith %}
+                            <br>
+                            <label for="email">Your email:</label>
+                            <input type="text" class="form-control" id="email" name="email" value="yiceg@itmailr.com">
+                            <br>
+                            <div class="row">
+                                <div class="col-sm-6">  
+                                    <center><p style="font-size:21px"><b>------ Selector ------</b><p></center>
+                                    <label for="obj_count">Object count:</label>
+                                    <input type="text" class="form-control" id="obj_count" name="obj_count" value="12,14">
+                                    <br>
+                                    <label for="box_source">Box verification source:</label>
+                                    <input type="text" class="form-control" id="box_source" name="box_source" value="Google">
+                                    <br>
+                                    <label for="labels">Image labels:</label>
+                                    <input type="text" class="form-control" id="labels" name="labels" value="Snowman">
+                                </div>
+                                <div class="col-sm-6"> 
+                                    <center><p style="font-size:21px"><b>------ Augmentor ------</b><p></center>
+                                    <div class="row">  
+                                        <div class="col-sm-6">  
+                                            <label for="image_size">Image dimension:</label>
+                                            <input type="text" class="form-control" id="image_size" name="image_size" value="256">
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label for="scale">Scale factor:</label>
+                                            <input type="text" class="form-control" id="scale" name="scale" value="1.2">
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <label for="crop">Crop boundaries:</label>
+                                    <input type="text" class="form-control" id="crop" name="crop" value="0.1,0.8,0.3,0.7">
+                                    <br>
+                                    <label for="blur">Gaussian blur size and sigma:</label>
+                                    <input type="text" class="form-control" id="blur" name="blur" value="7,1.3">
+	                            </div>
+	                        </div>
+                            <br>													   
+                            <center>
+                                <button style="width:50%" type="submit" class="btn btn-success">Submit</button>
+                            </center>
+<br><br><br><br><br><br><br><br>
+                        </div>
+                    </div>
                 </div>
-            {% endif %}
-            {% if "Error" in message[1]: %}
-                <div class="alert alert-danger">
-                <strong>Error: </strong> {{ message[1] }}
-                </div>
-            {% endif %}
-        {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
-    <br>
-    </div>
-    </div>
-  </body>
+            </form>
+        </div>
+    </body>
 </html>
