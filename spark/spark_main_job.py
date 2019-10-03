@@ -5,6 +5,7 @@ sys.path.insert(0, './python')
 import time
 import process_cmd_params
 import init
+import ec2_manager
 import select_images
 import spark_save_metadata
 import psycopg2_save_metadata
@@ -27,6 +28,7 @@ def run_spark_job():
 
     [user_email, user_param, user_selection, user_labels]=process_cmd_params.process()
     [internal_params, bucket, connection, output_foldername, aws_key, aws_access, db_password]=init.init()
+    ec2_manager.increment_requests(connection):
     imageids=select_images.select(connection, user_selection)
     [s3_image_files, query]=build_query_and_s3_image_files(imageids)
     image_count=len(imageids)
@@ -35,7 +37,7 @@ def run_spark_job():
     start_time=time.time()
     if image_count>internal_params[1]:
         print('')
-#        spark_save_metadata.save(output_foldername, query, db_password, user_param)
+        spark_save_metadata.save(output_foldername, query, db_password, user_param)
     else:
         psycopg2_save_metadata.save(connection, query, user_param, output_foldername)
     print("database execution time: "+str(time.time()-start_time))
@@ -44,10 +46,9 @@ def run_spark_job():
     start_time=time.time()
     images_df=spark_process_images.transform(internal_params, s3_image_files, user_param)
     is_large_scale_image_save=spark_save_images.save(internal_params, images_df, image_count, bucket, aws_key, aws_access, output_foldername)
-  #  is_large_scale_image_save=True
-  #  spark_save_images_big.transform(internal_params, s3_image_files, user_param,aws_key, aws_access, output_foldername)
     print("saving images time: "+str(time.time()-start_time))
     
+    ec2_manager.decrement_requests(connection):
     notify_user.email_and_log(output_foldername, connection, user_email, user_selection, user_param, user_labels, is_large_scale_image_save)
     
 run_spark_job()
