@@ -10,7 +10,6 @@ import spark_save_metadata
 import psycopg2_save_metadata
 import spark_process_images
 import spark_save_images
-import spark_save_images_big
 import notify_user
 
 
@@ -35,7 +34,8 @@ def run_spark_job():
     
     start_time=time.time()
     if image_count>internal_params[1]:
-        spark_save_metadata.save(output_foldername, query, db_password, user_param)
+        print('')
+#        spark_save_metadata.save(output_foldername, query, db_password, user_param)
     else:
         psycopg2_save_metadata.save(connection, query, user_param, output_foldername)
     print("database execution time: "+str(time.time()-start_time))
