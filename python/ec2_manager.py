@@ -1,12 +1,13 @@
 # start or stop ec2 slave nodes based on how many queries there are in the system, queried from the database
 
 import boto3
+import time
 
-def manage(connection):
+def manage(connection, instanceIds):
     def stop_instances():
         try:
             response=ec2.stop_instances(InstanceIds=instanceIds, DryRun=False)
-            connection.cursor().execute("UPDATE usage_stats SET running_instances=3")
+            connection.cursor().execute("UPDATE usage_stats SET running_instances=0")
             connection.commit()
         except ClientError as e:
             print(e)
@@ -14,30 +15,36 @@ def manage(connection):
     def start_instances():
         try:
             response=ec2.start_instances(InstanceIds=instanceIds, DryRun=False)
-            connection.cursor().execute("UPDATE usage_stats SET running_instances=0")
+            connection.cursor().execute("UPDATE usage_stats SET running_instances=3")
             connection.commit()
+            waiter=ec2.get_waiter('instance_status_ok')
+            waiter.wait(InstanceIds=instanceIds)
         except ClientError as e:
             print(e)
             
-    instanceIds=['i-056ca5c6a60592957', 'i-08e547af1b32f71f0', 'i-0e4ff7936219479c5']    
     ec2=boto3.client('ec2')
-    usage_stats=connection.cursor().execute("SELECT requests FROM usage_stats").fetchall()
-    if usage_stats[1]==0 and usage_stats[0]>0:
-        start_instances()
-    elif usage_stats[1]>0 and usage_stats[0]==0:
+    cursor=connection.cursor()
+    cursor.execute("SELECT * FROM usage_stats")
+    usage_stats=cursor.fetchall()
+    instances = boto3.client("ec2").describe_instance_status()
+    if usage_stats[0][1]==0 and usage_stats[0][0]>0:
+        print('===starting instances===')
+        start_instances()        
+    elif usage_stats[0][1]>0 and usage_stats[0][0]==0:
+        print('===stopping instances===')
         stop_instances()
 
-def increment_requests(connection):
+def increment_requests(connection, instanceIds):
     connection.cursor().execute("UPDATE usage_stats SET requests=requests+1")
     connection.commit()
-    manage(connection) 
+    manage(connection, instanceIds) 
 
-def decrement_requests(connection):
+def decrement_requests(connection, instanceIds):
     connection.cursor().execute("UPDATE usage_stats SET requests=requests-1")
     connection.commit()
-    manage(connection)
+    manage(connection, instanceIds)
 
-def reset()
-    connection.cursor().execute("UPDATE usage_stats SET requests=0, running_instances=1")
+def reset(connection, instanceIds):
+    connection.cursor().execute("UPDATE usage_stats SET requests=0, running_instances=3")
     connection.commit()
-    manage()  
+    manage(connection, instanceIds)
