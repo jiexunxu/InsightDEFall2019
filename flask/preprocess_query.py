@@ -14,7 +14,11 @@ def preprocess(request):
     labels=request.form['labels']
     image_size=request.form['image_size']
     scale=request.form['scale']
-    crop=request.form['crop']
+ #   crop=request.form['crop']
+    Xmin=request.form['Xmin']
+    Xmax=request.form['Xmax']
+    Ymin=request.form['Ymin']
+    Ymax=request.form['Ymax']
     blur_size=request.form['blur_size']
     blur_sigma=request.form['blur_sigma']
     
@@ -32,13 +36,8 @@ def preprocess(request):
             labels.append(token)
     except:
         labels=['Apple']
-    try:
-        tokens=crop.split(',')
-        crop=[tokens[0], tokens[1], tokens[2], tokens[3]]
-    except:
-        crop=['0.0', '1.0', '0.0', '1.0']
     
-    arguments="./spark/spark_main_job.py  "+email+" "+image_size+" "+blur_size+" "+blur_sigma+" "+scale+" "+crop[0]+" "+crop[1]+" "+crop[2]+" "+crop[3]+" "+min_obj+" "+max_obj+" "+box_source
+    arguments="./spark/spark_main_job.py  "+email+" "+image_size+" "+blur_size+" "+blur_sigma+" "+scale+" "+Xmin+" "+Xmax+" "+Ymin+" "+Ymax+" "+min_obj+" "+max_obj+" "+box_source
     for label in labels:
         arguments+=" "+label 
     command="spark-submit --driver-class-path /home/ubuntu/postgresql-42.2.8.jar --jars /home/ubuntu/postgresql-42.2.8.jar --packages org.apache.spark:spark-avro_2.11:2.4.0,com.microsoft.ml.spark:mmlspark_2.11:0.18.1 "+arguments

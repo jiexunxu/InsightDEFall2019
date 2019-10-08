@@ -7,17 +7,18 @@ import process_cmd_params
 import init
 import ec2_manager
 import select_images
-import spark_save_metadata
 import psycopg2_save_metadata
+import opencv_transform_and_save_images
 import spark_process_images
 import spark_save_images
 import notify_user
-
+import subprocess
+import upload_result_to_s3
 
 def run_spark_job(): 
     def build_query_and_s3_image_files(imageids):
         s3_image_files=[]
-        query="SELECT * from image_bbox WHERE"
+        query="SELECT * FROM image_bboxes WHERE"
         for imageid in imageids:
             s3_image_files.append("s3a://jiexunxu-open-image-dataset/train_data/"+imageid[0]+".jpg")
             query+=" imageid='"+imageid[0]+"' OR"
@@ -35,16 +36,22 @@ def run_spark_job():
     print('selected image count:'+str(image_count))
     
     start_time=time.time()
-    if image_count>internal_params[1]:
-        spark_save_metadata.save(output_foldername, query, db_password, user_param)
-    else:
-        psycopg2_save_metadata.save(connection, query, user_param, output_foldername)
+    psycopg2_save_metadata.save(connection, query, user_param, output_foldername)
     print("database execution time: "+str(time.time()-start_time))
 
-    print("start batch processing in spark")       
     start_time=time.time()
-    images_df=spark_process_images.transform(internal_params, s3_image_files, user_param)
-    is_large_scale_image_save=spark_save_images.save(internal_params, images_df, image_count, bucket, aws_key, aws_access, output_foldername)
+    if image_count>internal_params[0]:
+        images_df=spark_process_images.transform(internal_params, s3_image_files, user_param)
+        spark_save_images.save(internal_params, images_df, image_count, bucket, aws_key, aws_access, output_foldername)
+        is_large_scale_image_save=True
+    else:
+        command="mkdir "+output_foldername
+        process=subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+        process.wait()
+        for imageid in imageids:        
+            opencv_transform_and_save_images.process(bucket, imageid[0], output_foldername, user_param[0], user_param[1], user_param[2], user_param[3], user_param[4], user_param[5], user_param[6], user_param[7])
+        upload_result_to_s3.upload(bucket, output_foldername)
+        is_large_scale_image_save=False
     print("saving images time: "+str(time.time()-start_time))
     
     notify_user.email_and_log(output_foldername, connection, user_email, user_selection, user_param, user_labels, is_large_scale_image_save)

@@ -10,7 +10,6 @@ import subprocess
 
 
 def save(internal_params, images_df, image_count, bucket, aws_key, aws_access, output_foldername):
-
     def save_individual_images(record, aws_key, aws_access, output_foldername, save_to_s3):
         # Need to re-initialize a boto3 connection
         s3=boto3.resource('s3', aws_access_key_id=aws_key, aws_secret_access_key=aws_access)
@@ -55,5 +54,4 @@ def save(internal_params, images_df, image_count, bucket, aws_key, aws_access, o
         process.wait()
         images_df.rdd.foreach(lambda record : save_individual_images(record, aws_key, aws_access, output_foldername, False))
         upload_result_to_s3.upload(bucket, output_foldername)
-    return image_count>internal_params[0]
 

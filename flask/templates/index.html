@@ -18,7 +18,7 @@
                 <div class="form-group">
                     {{ form.csrf }}
                     <div class="row align-items-center justify-content-center">   
-                        <div class="col-md-12"> 
+                        <div class="col-md-7"> 
                             {% with messages = get_flashed_messages(with_categories=true) %}
                                 {% if messages %}
                             {% for message in messages %}
@@ -72,8 +72,22 @@
                                         </div>
                                     </div>
                                     <br>
-                                    <label for="crop">Crop boundaries:</label>
-                                    <input type="text" class="form-control" id="crop" name="crop" value="0.1,0.8,0.3,0.7">
+                                    <label for="Xmin">Crop boundaries:</label>
+                                    <!-- input type="text" class="form-control" id="crop" name="crop" value="0.1,0.8,0.3,0.7"-->
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="Xmin" name="Xmin" value="0.10">
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="Xmax" name="Xmax" value="0.80">
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="Ymin" name="Ymin" value="0.20">
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="Ymax" name="Ymax" value="0.70">
+                                        </div>
+                                    </div>
                                     <br>
                                     <div class="row">  
                                         <div class="col-sm-6">  
@@ -87,11 +101,13 @@
                                     </div>
 	                            </div>
 	                        </div>
+                            <br>
+                            <p><a href=http://jiexunxu-open-image-dataset.s3.amazonaws.com/class-descriptions-boxable.csv>Click here</a> to download the complete list of image labels</p>
                             <br>													   
                             <center>
                                 <button style="width:50%" type="submit" class="btn btn-success">Submit</button>
                             </center>
-<br><br><br><br><br><br><br><br>
+                            <br><br><br><br><br><br><br><br><br><br>
                         </div>
                     </div>
                 </div>
