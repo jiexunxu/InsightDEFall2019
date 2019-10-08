@@ -18,7 +18,7 @@ import upload_result_to_s3
 def run_spark_job(): 
     def build_query_and_s3_image_files(imageids):
         s3_image_files=[]
-        query="SELECT * FROM image_bboxes WHERE"
+        query="SELECT imageid,label,x_min,x_max,y_min,y_max FROM image_bboxes WHERE"
         for imageid in imageids:
             s3_image_files.append("s3a://jiexunxu-open-image-dataset/train_data/"+imageid[0]+".jpg")
             query+=" imageid='"+imageid[0]+"' OR"
