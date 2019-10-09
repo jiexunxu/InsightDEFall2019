@@ -18,17 +18,17 @@ def process(bucket, img_name, output_foldername, L, w, sigma, sc, cx1, cx2, cy1,
     # transform 3: Resize to L by L, rotate 180, and gaussian blur
     # transform 4: Resize to L*sc by L*sc, crop down to L by L, and gaussian blur
     # transfomr 5: Crop to the rectangle defined as W*cx1, W*cx2, H*cy1, H*cy2, resize to L by L, and gaussian blur
-    img_resized = cv2.resize(img, (L, L), interpolation=cv2.INTER_AREA)
+    img_resized = cv2.resize(img.copy(), (L, L), interpolation=cv2.INTER_AREA)
     fhb_img = cv2.GaussianBlur(cv2.flip(img_resized, 1), (w, w), sigma)
     fvb_img = cv2.GaussianBlur(cv2.flip(img_resized, 0), (w, w), sigma)
     rb_img = cv2.GaussianBlur(cv2.flip(img_resized, -1), (w, w), sigma)
-    sb_img = cv2.resize(img, (int(L * sc), int(L * sc)), interpolation=cv2.INTER_AREA)
+    sb_img = cv2.resize(img.copy(), (int(L * sc), int(L * sc)), interpolation=cv2.INTER_AREA)
     start_xy = int((sc - 1) / 2 * L)
     sb_img = sb_img[start_xy : start_xy + L, start_xy : start_xy + L]
     sb_img = cv2.GaussianBlur(sb_img, (w, w), sigma)
     [height, width, nchannels] = img.shape
     cb_img = img[
-        int(width * cx1) : int(width * cx2), int(height * cy1) : int(height * cy2)
+        int(height *cy1) : int(height * cy2), int(width * cx1) : int(width * cx2)
     ]
     cb_img = cv2.resize(cb_img, (L, L), interpolation=cv2.INTER_AREA)
     cb_img = cv2.GaussianBlur(cb_img, (w, w), sigma)

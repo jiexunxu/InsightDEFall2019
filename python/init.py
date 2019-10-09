@@ -9,8 +9,7 @@ import random
 
 def init():
     def randomString(stringLength):
-        letters = string.ascii_letters
-        return "".join(random.choice(letters) for i in range(stringLength))
+        return "".join(str(random.randrange(0, 9)) for i in range(stringLength))
 
     # If there are more than internal_params[0] images to process, save them as individual files on s3, else save them locally and upload to s3 as a zip file
     internal_params = [200]
@@ -29,7 +28,7 @@ def init():
     connection = psycopg2.connect(
         host=db_host, database="imagedb", user="postgres", password=db_password
     )
-    # Use current time plus a 10-character random string to save each processed request in a unique folder on s3
+    # Use current time plus a 10-digit random digit to save each processed request in a unique folder on s3
     output_foldername = str(time.time()) + "-" + randomString(10) + "/"
     return [
         internal_params,
