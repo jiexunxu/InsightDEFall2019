@@ -59,19 +59,21 @@ def run_spark_job():
     start_time = time.time()
     if image_count > internal_params[0]:
         # With a large scale request, save images individually to s3 and asks user to use aws cli to get them
-        images_df = spark_process_images.transform(
-            internal_params, s3_image_files, user_param
-        )
-        spark_save_images.save(
-            internal_params,
-            images_df,
-            image_count,
-            bucket,
-            aws_key,
-            aws_access,
-            output_foldername,
-        )
-        is_large_scale_image_save = True
+        try:
+            images_df = spark_process_images.transform(
+                internal_params, s3_image_files, user_param
+            )
+            spark_save_images.save(
+                internal_params,
+                images_df,
+                image_count,
+                bucket,
+                aws_key,
+                aws_access,
+                output_foldername,
+            )
+        except:
+            pass
     else:
         # With a small scale request, save images locally and zip them up before uploading to s3
         command = "mkdir " + output_foldername
@@ -92,7 +94,6 @@ def run_spark_job():
                 user_param[7],
             )
         upload_result_to_s3.upload(bucket, output_foldername)
-        is_large_scale_image_save = False
     print("saving images time: " + str(time.time() - start_time))
     # Job finished, notify the user
     notify_user.email_and_log(
@@ -102,7 +103,7 @@ def run_spark_job():
         user_selection,
         user_param,
         user_labels,
-        is_large_scale_image_save,
+        image_count > internal_params[0],
     )
     if enable_ec2_control:
         ec2_manager.decrement_requests(connection, instanceIds)
