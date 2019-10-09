@@ -2,26 +2,18 @@
 # Returns a list where 1st element is AWS key ID, 2nd element is AWS secret access key
 
 import csv
+import yaml
 
 def read():
-    with open('credentials.txt') as file:
-        reader=csv.reader(file, delimiter=',')
-        line_count=0
-        for row in reader:
-            if line_count==0:
-                key_ID=row[1]
-            elif line_count==1:
-                secret_access_key=row[1]
-            elif line_count==2:
-                db_host=row[1]
-            elif line_count==3:
-                db_password=row[1]
-            elif line_count==4:
-                instanceIds=[row[1], row[2], row[3]]
-            elif line_count==5:
-                if row[1]=='1':
-                    enable_ec2_control=True
-                else:
-                    enable_ec2_control=False
-            line_count+=1
+    with open('credentials.yaml') as f:
+        data=yaml.safe_load(f)
+        key_ID=data[0]
+        secret_access_key=data[1]
+        db_host=data[2]
+        db_password=data[3]
+        instanceIds=[data[4], data[5], data[6]]
+        if data[7]=='1':
+            enable_ec2_control=True
+        else:
+            enable_ec2_control=False
     return [key_ID, secret_access_key, db_host, db_password, instanceIds, enable_ec2_control]

@@ -21,7 +21,10 @@ class ReusableForm(Form):
     labels = TextField('', validators=[validators.required()])
     image_size = TextField('', validators=[validators.required()])
     scale = TextField('', validators=[validators.required()])
-    crop = TextField('', validators=[validators.required()])
+    Xmin = TextField('', validators=[validators.required()])
+    Xmax = TextField('', validators=[validators.required()])
+    Ymin = TextField('', validators=[validators.required()])
+    Ymax = TextField('', validators=[validators.required()])
     blur_size = TextField('', validators=[validators.required()])
     blur_sigma = TextField('', validators=[validators.required()])
 
