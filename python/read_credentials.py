@@ -1,5 +1,4 @@
-# Read AWS credentials from local credentials.txt file
-# Returns a list where 1st element is AWS key ID, 2nd element is AWS secret access key
+# Read AWS credentials from local credentials.yaml file
 
 import csv
 import yaml

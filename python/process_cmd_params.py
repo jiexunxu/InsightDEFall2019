@@ -11,7 +11,7 @@ def process():
         csv_reader=csv.reader(f, delimiter=',')
         for row in csv_reader:
             label_dict[row[1]]=row[0]
-    # process command line arguments        
+    # process command line arguments with the argparse module        
     parser=argparse.ArgumentParser(description='spark-submit arguments')
     parser.add_argument("user_email", default="testmail@mailnow2.com", type=str)
     parser.add_argument("resize_dim", default=256, type=int)

@@ -7,14 +7,14 @@ from mmlspark.opencv import ImageTransformer
 from mmlspark.io import *
 
 def transform(internal_params, s3_image_files, user_param):
-    # Load all images from s3
+    # Setup Spark
     sc_conf=SparkConf().setAppName("BatchImageProcessing")
-    if(len(s3_image_files)>internal_params[0]):
-        sc_conf.setMaster("spark://ip-10-0-0-5:7077")
-        sc_conf.set("spark.executor.memory", "4g")
-        sc_conf.set("spark.executor.cores", 2)
-        sc_conf.set("spark.num.executors", 4)
+    sc_conf.setMaster("spark://ip-10-0-0-5:7077")
+    sc_conf.set("spark.executor.memory", "4g")
+    sc_conf.set("spark.executor.cores", 2)
+    sc_conf.set("spark.num.executors", 4)
     spark = pyspark.sql.SparkSession.builder.config(conf=sc_conf).getOrCreate()
+    # Load all images from s3
     images_df=spark.read.format("image").load(s3_image_files)
     # user provided resized image dimension
     L=user_param[0]

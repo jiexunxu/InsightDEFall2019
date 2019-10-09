@@ -1,10 +1,8 @@
 # This is a preprocessing function that reads train-annotations-human-imagelabels-boxable.csv, train-annotations-bbox.csv and class-descriptions.csv from S3, then create a new csv file on EC2 as a database for selecting images by user later.
-# The database uses unique ImageID as keys, and for each key, it contains the following fields:
-# ObjectCount, number of objects in this image
-# IsManual, is 1 if all labels are google verified, 0 otherwise
-# Image labels, a list of image level label names associated with this image
+#
 # This database is then output to a csv file called train-selection-database.csv
-
+#
+# This script is not part of the real time BOSA system. It is used to preprocess metadata
 import boto3
 import read_credentials
 

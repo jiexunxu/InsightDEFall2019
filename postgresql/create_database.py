@@ -1,4 +1,6 @@
 # This python script reads from class-descriptions-boxable.csv, train-annotations-bbox.csv, train-annotations-human-imagelabels-boxable.csv and train-selection-database.csv on AWS S3, and connects to the imagedb database locally. It then puts the contents of these four files into the coresponding entries into the databases
+#
+# This script is not part of the real time BOSA system. It is used to preprocess metadata
 
 import boto3
 import psycopg2
@@ -14,7 +16,7 @@ def main():
     insert_into_label_names(bucket, connection, cursor) 
     print('start insertion into image_labels')
     insert_into_image_labels(bucket, connection, cursor)
-    print('start insertion into image_bbox')
+    print('start insertion into image_bboxes')
     insert_into_image_bbox(bucket, connection, cursor)
     print('start insertion into image_selection')
     insert_into_image_selection(bucket, connection, cursor)
@@ -53,6 +55,53 @@ def insert_into_image_bbox(bucket, connection, cursor):
             cursor.execute('INSERT INTO image_bbox (imageid, source, label, confidence, x_min, x_max, y_min, y_max, is_occ, is_tru, is_grp, is_dep, is_ins) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', (item[0], item[1], item[2], item[3], float(item[4]), float(item[5]), float(item[6]), float(item[7]), item[8][0], item[9][0], item[10][0], item[11][0], item[12][0]))
         line_count+=1
         percent=report_progress(connection, line_count, len(lines), percent)
+    connection.commit()
+
+    # Use imageid as PRIMARY KEY for faster query access. Concatenates all bbox metadata into an array
+    cursor.execute('DELETE FROM image_bboxes')
+    connection.commit()
+    lines=read_csv(bucket, 'train-annotations-bbox.csv')
+    line_count=0
+    percent=0
+    labels=[]
+    x_mins=[]
+    x_maxs=[]
+    y_mins=[]
+    y_maxs=[]
+    x_mins_1=[]
+    x_maxs_1=[]
+    y_mins_1=[]
+    y_maxs_1=[]
+    for line in lines:
+        if line_count>0:
+            item=line.split(',')
+            imageid=item[0]
+            if imageid!=last_imageid:
+                cursor.execute('INSERT INTO image_bboxes (imageid, label, x_min, x_max, y_min, y_max, fhb_x_min, fhb_x_max, fhb_y_min, fhb_y_max, fvb_x_min, fvb_x_max, fvb_y_min, fvb_y_max, rb_x_min, rb_x_max, rb_y_min, rb_y_max) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', (imageid, labels, x_mins, x_maxs, y_mins, y_maxs, x_mins_1, x_maxs_1, y_mins, y_maxs, x_mins, x_maxs, y_mins_1, y_maxs_1, x_mins_1, x_maxs_1, y_mins_1, y_maxs_1))
+                connection.commit()
+                last_imageid=imageid
+                labels=[]
+                x_mins=[]
+                x_maxs=[]
+                y_mins=[]
+                y_maxs=[]
+                x_mins_1=[]
+                x_maxs_1=[]
+                y_mins_1=[]
+                y_maxs_1=[]
+            labels.append(label_dict[item[2]])
+            x_mins.append(float(item[4]))
+            x_maxs.append(float(item[5]))
+            y_mins.append(float(item[6]))
+            y_maxs.append(float(item[7]))
+            x_mins_1.append(1-float(item[4]))
+            x_maxs_1.append(1-float(item[5]))
+            y_mins_1.append(1-float(item[6]))
+            y_maxs_1.append(1-float(item[7]))
+        line_count+=1
+        percent=report_progress(connection, line_count, len(lines), percent)
+        connection.commit()
+    cursor.execute('INSERT INTO image_bboxes (imageid, label, x_min, x_max, y_min, y_max, fhb_x_min, fhb_x_max, fhb_y_min, fhb_y_max, fvb_x_min, fvb_x_max, fvb_y_min, fvb_y_max, rb_x_min, rb_x_max, rb_y_min, rb_y_max) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', (imageid, labels, x_mins, x_maxs, y_mins, y_maxs, x_mins_1, x_maxs_1, y_mins, y_maxs, x_mins, x_maxs, y_mins_1, y_maxs_1, x_mins_1, x_maxs_1, y_mins_1, y_maxs_1))
     connection.commit()
 
 

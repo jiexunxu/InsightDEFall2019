@@ -1,17 +1,15 @@
-# This function accepts user input from the web UI, select the corresponding images that match the user selection criteria
-
-# Parameters:
-# min_obj_count and max_obj_count: Maximum number of boxable objects an image can have. Selected images must have number of objects between these two (inclusive)
-#is_google: If it is 1, can only select images from google verified; otherwise all images are eligible
-# target_label: images must contain target_label
+# This function accepts user input from the web UI and select the corresponding image names that match the user selection criteria
 
 import psycopg2
 import read_credentials
 
 def select(connection, user_selection):
+    # Selected images must contain boxable objects between min_obj_count and max_obj_count
     min_obj_count=user_selection[0]
     max_obj_count=user_selection[1]
+    # Selected images must be google verified if is_google is 1
     is_google=user_selection[2]
+    # Selected images can contain any of the user supplied labels
     target_labels=tuple(user_selection[3:len(user_selection)])
     cursor=connection.cursor()
     if is_google==1:

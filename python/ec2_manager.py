@@ -3,7 +3,9 @@
 import boto3
 import time
 
+# Helper unction called by increment_requests(), decrement_requests() and reset()
 def manage(connection, instanceIds):
+    # Uses boto3 to start or stop EC2 instances on AWS
     def stop_instances():
         try:
             response=ec2.stop_instances(InstanceIds=instanceIds, DryRun=False)
@@ -24,6 +26,7 @@ def manage(connection, instanceIds):
             
     ec2=boto3.client('ec2')
     cursor=connection.cursor()
+    # Read how many requests are still present from the database
     cursor.execute("SELECT * FROM usage_stats")
     usage_stats=cursor.fetchall()
     instances = boto3.client("ec2").describe_instance_status()
@@ -34,16 +37,19 @@ def manage(connection, instanceIds):
         print('===stopping instances===')
         stop_instances()
 
+# Called every time a user clicks the Submit button, if enable_ec2_control is True
 def increment_requests(connection, instanceIds):
     connection.cursor().execute("UPDATE usage_stats SET requests=requests+1")
     connection.commit()
     manage(connection, instanceIds) 
 
+# Called every time a spark-submit job finishes, if enable_ec2_control is True
 def decrement_requests(connection, instanceIds):
     connection.cursor().execute("UPDATE usage_stats SET requests=requests-1")
     connection.commit()
     manage(connection, instanceIds)
 
+# Called when the project is started initially, if enable_ec2_control is True
 def reset(connection, instanceIds):
     connection.cursor().execute("UPDATE usage_stats SET requests=0, running_instances=3")
     connection.commit()

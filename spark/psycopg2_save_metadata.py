@@ -18,7 +18,8 @@ def save(connection, query, user_param, output_foldername):
     # save the updated metadata to s3
     s3=s3fs.S3FileSystem(anon=False)
     with s3.open("jiexunxu-open-image-dataset/output_data/"+output_foldername+"selected-train-annotations-bbox.csv", "w") as f:
-        f.write("ImageID,label,x_min,x_max,y_min,y_max,fhb_x_min,fhb_x_max,fhb_y_min,fhb_y_max,fvb_x_min,fvb_x_max,fvb_y_min,fvb_y_max,rb_x_min,rb_x_max,rb_y_min,rb_y_max,sb_x_min,sb_x_max,sb_y_min,sb_y_max,cb_x_min,cb_x_max,cb_y_min,cb_y_max\n")
+    f.write("ImageID,label,x_min,x_max,y_min,y_max,fhb_x_min,fhb_x_max,fhb_y_min,fhb_y_max,fvb_x_min,fvb_x_max,fvb_y_min,fvb_y_max,rb_x_min,rb_x_max,rb_y_min,rb_y_max,sb_x_min,sb_x_max,sb_y_min,sb_y_max,cb_x_min,cb_x_max,cb_y_min,cb_y_max\n")
+        # for each image, calculate and save their associated bbox metadata after transform
         for k in range(len(bbox_descriptors)):
             row=bbox_descriptors[k]            
             for i in range(len(row[1])):

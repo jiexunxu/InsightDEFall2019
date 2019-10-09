@@ -1,3 +1,4 @@
+# Entry point of the flask app that exposes a web UI for users to submit request to the BOSA system
 import sys
 sys.path.insert(0, './flask')
 sys.path.insert(0, './spark')
@@ -6,13 +7,14 @@ from flask import Flask, render_template, flash, request
 from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
 import preprocess_query
 import subprocess
-
+import os
 
 DEBUG = True
 app = Flask(__name__)
 app.config.from_object(__name__)
-app.config['SECRET_KEY'] = 'SjdnUends821Jsdlkvxh391ksdODnejdDw'
+app.config['SECRET_KEY'] = os.urandom(12)
 
+# All fields must be filled to submit a request
 class ReusableForm(Form):
     email = TextField('', validators=[validators.required()])
     min_obj = TextField('', validators=[validators.required()])
@@ -28,6 +30,7 @@ class ReusableForm(Form):
     blur_size = TextField('', validators=[validators.required()])
     blur_sigma = TextField('', validators=[validators.required()])
 
+# Upon clickin on the Submit button, a spark-submit command is sent to the cluster to process the user request
 def submit_request(request):
     command=preprocess_query.preprocess(request)
     process=subprocess.Popen(command.split())
