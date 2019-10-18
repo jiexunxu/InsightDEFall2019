@@ -27,4 +27,5 @@ Furthermore, for each email address, BOSA keeps track of the history of paramete
 Finally, following is a youtube video that demos the BOSA interface:
 
 ![Demo video](https://img.youtube.com/vi/pGKgGYeqbCY/0.jpg)
-(https://www.youtube.com/watch?v=pGKgGYeqbCY)
+
+https://www.youtube.com/watch?v=pGKgGYeqbCY
