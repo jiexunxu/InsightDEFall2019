@@ -24,4 +24,6 @@ There are a few under the hood implementations for BOSA. For small scale request
 
 Furthermore, for each email address, BOSA keeps track of the history of parameter choices for that email. This is useful for data scientists for reproducible machine learning purposes. Yet another small feature of BOSA is that it uses boto3 to automatically stop the EC2 instances if there are currently no requests in the system, saving operational cost when BOSA is idle. When requests are present, the stopped EC2 instances are started for faster processing.
 
-With its easy-to-use interface and its scalability, BOSA can quickly prepare data that data scientists need, saving their and their company’s precious time and resources and allow them to focus on their more important responsibilities.
+Finally, following is a youtube video that demos the BOSA interface:
+
+![Demo video](https://img.youtube.com/vi/pGKgGYeqbCY/0.jpg)](https://www.youtube.com/watch?v=pGKgGYeqbCY)
