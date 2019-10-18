@@ -2,6 +2,8 @@ BOSA (Boxable Open-image Selector & Augmentor)
 
 Google’s open images dataset is a popular choice for data scientists, professors and other machine-learning professionals. Within this dataset, there are over 500GB of images that contains boxable objects such as apples, dogs, laptops etc. The boxes’ locations and sizes, which cover these boxable objects, are saved in an accompanying metadata document. These boxes metadata are verified either by Google or by other sources. As of open images dataset V5, there are over 1 million such images and over 15 million boxes.
 
+![Google open image](/images/openimage.jpg)
+
 This boxable image dataset is valuable for data scientists that wants to train their specially tailored machine-learning models in object detection, recognition etc. Often they will select a subset of the images containing objects that are relevant to their model, augment the images themselves by applying various image transforms such as flip, rotation, scale, crop and blur, and use the resulting data to train their models.
 
 However, no such convenient tool is publicly available that can select and augment the images based on different users’ inputs, and automatically calculate the boxes locations and sizes after various transforms. Data scientists often need to write their own code to do all of the steps above, costing their and their company’s precious time and resources. At Insight, I built BOSA (Boxable Open-image Selector & Augmentor), a scalable system that does all of the data preparations above for multiple users.
@@ -29,3 +31,10 @@ Finally, following is a youtube video that demos the BOSA interface:
 ![Demo video](https://img.youtube.com/vi/pGKgGYeqbCY/0.jpg)
 
 https://www.youtube.com/watch?v=pGKgGYeqbCY
+
+There are a lot of new features that can be worked on to extend this project. Following are some natural next steps:
+1) Implement richer selection and augmentation parameters to give user more control
+2) Process additional metadata such as object masks
+3) Scale up to process even more images, and potentially process user uploaded images
+4) Use technologies like Terraflow to spawn and de-spawn AWS computing nodes depending on job size and jobs in queue
+5) Use a login system, keeps more user profile data, and prevents abuse
