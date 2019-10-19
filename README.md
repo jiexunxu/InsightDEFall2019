@@ -1,4 +1,4 @@
-<h1><b>BOSA</b> (<b>B</b>oxable <b>O</b>pen-image <b>S</b>elector & <b>A</b>ugmentor)</h1>
+<h1>__BOSA__ (__*B*__oxable __*O*__pen-image __*S*__elector & __*A*__ugmentor)</h1>
 
 <i>This project is completed in Insight Data Engineering 2019 NY Session C in three weeks</i>
 
