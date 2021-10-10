@@ -1,7 +1,5 @@
 <h1>BOSA (Boxable Open-image Selector & Augmentor)</h1>
 
-<i>This project is completed in Insight Data Engineering 2019 NY Session C in three weeks</i>
-
 Google’s open images dataset is a popular choice for data scientists, professors and other machine-learning professionals. Within this dataset, there are over 500GB of images that contains boxable objects such as apples, dogs, laptops etc. The boxes’ locations and sizes, which cover these boxable objects, are saved in an accompanying metadata document. These boxes metadata are verified either by Google or by other sources. As of open images dataset V5, there are over 1 million such images and over 15 million boxes.
 
 ![Google open image](/images/openimage.jpg)
